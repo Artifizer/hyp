@@ -1,0 +1,33 @@
+# Build artifacts
+/target/
+**/target/
+**/Cargo.lock
+
+# Rust/Cargo
+**/*.rs.bk
+
+# Editors / IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Dependency / tool outputs
+node_modules/
+coverage/
+*.coverage
+*.lcov
+
+# Logs
+*.log
+log/
+
+# Temporary files
+tmp/
+/dist/
+/build/
