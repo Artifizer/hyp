@@ -44,4 +44,7 @@ pub mod e17_performance;
 // E18* - API Design
 pub mod e18_api_design;
 
+// E19* - Code Hygiene
+pub mod e19_hygiene;
+
 // Note: Individual problem modules are available via their full paths

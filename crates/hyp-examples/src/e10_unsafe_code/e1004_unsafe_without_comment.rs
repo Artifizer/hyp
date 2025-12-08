@@ -1,6 +1,9 @@
-/// E1004: Unsafe without comments
+/// E1004: Unsafe without comments (DEPRECATED - use E1904)
 /// Severity: HIGH
 /// LLM confusion: 4 (HIGH)
+///
+/// **DEPRECATED**: This checker has been moved to E1904 (Code Hygiene category).
+/// Please refer to e1904_unsafe_justification.rs for the current implementation.
 ///
 /// Description: This code uses unsafe operations without documenting the safety requirements. Unsafe
 /// code can cause undefined behavior (crashes, data corruption, security vulnerabilities) if the
@@ -8,9 +11,10 @@
 /// it safe - what conditions must be true, what the caller must guarantee. Without documentation,
 /// future maintainers can't verify the code is correct.
 ///
-/// Mitigation: Add `// SAFETY:` comments before all unsafe blocks. Document preconditions,
-/// invariants, and why the operation is safe. Use `#![forbid(unsafe_op_in_unsafe_fn)]` to require
-/// explicit unsafe blocks even in unsafe functions. Minimize and isolate unsafe code.
+/// Mitigation: Use E1904 instead, which provides configurable comment patterns and path restrictions.
+/// Add `// SAFETY:` comments before all unsafe blocks. Document preconditions, invariants, and why
+/// the operation is safe. Use `#![forbid(unsafe_op_in_unsafe_fn)]` to require explicit unsafe blocks
+/// even in unsafe functions. Minimize and isolate unsafe code.
 
 #[allow(clippy::useless_vec)]
 pub fn e1004_bad_unsafe_no_comments() {

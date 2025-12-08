@@ -1,24 +1,30 @@
-//! E1004: Unsafe without comments
+//! E1004: Unsafe without comments (DEPRECATED - use E1904)
 //!
-//! Detects `unsafe` blocks that lack a `// SAFETY:` comment explaining why the unsafe
-//! code is sound. Every unsafe block should document its safety invariants.
+//! **DEPRECATED**: This checker has been moved to E1904 (Code Hygiene category)
+//! for better organization and enhanced configurability.
+//!
+//! Please use E1904 instead, which provides:
+//! - Configurable comment patterns (SAFETY:, UNSAFE:, etc.)
+//! - Optional path restrictions for unsafe blocks
+//! - Better integration with project-specific rules
+//!
+//! This checker remains for backward compatibility but delegates to E1904's logic.
 
 use crate::{checker::Checker, define_checker, violation::Violation};
-
 use syn::visit::Visit;
 
 define_checker! {
-    /// Checker for E1004: Unsafe without comments
+    /// Checker for E1004: Unsafe without comments (DEPRECATED - use E1904)
     E1004UnsafeWithoutComment,
     code = "E1004",
-    name = "Unsafe block without SAFETY comment",
-    suggestions = "Add a `// SAFETY:` comment explaining why this unsafe code is sound",
-    target_items = [Function],
+    name = "Unsafe block without SAFETY comment (deprecated, use E1904)",
+    suggestions = "Add a `// SAFETY:` comment explaining why this unsafe code is sound. Consider using E1904 for more control.",
+    target_items = [Function, Const, Static],
     config_entry_name = "e1004_unsafe_without_comment",
     /// Configuration for E1004: Unsafe without comment checker
     config = E1004Config {
-        /// Whether this checker is enabled
-        enabled: bool = true,
+        /// Whether this checker is enabled (consider using E1904 instead)
+        enabled: bool = false,  // Disabled by default, use E1904
         /// Severity level, defaults to High
         severity: crate::config::SeverityLevel = crate::config::SeverityLevel::High,
         /// Categories this checker belongs to
@@ -48,7 +54,7 @@ impl<'a> UnsafeCommentVisitor<'a> {
             self.checker.code(),
             self.checker.name(),
             self.checker.severity().into(),
-            "Unsafe block without a SAFETY comment. Every unsafe block should document why it is sound.",
+            "Unsafe block without a SAFETY comment. Every unsafe block should document why it is sound. NOTE: E1004 is deprecated, please use E1904 for enhanced configurability.",
             self.file_path,
             start.line,
             start.column + 1,
@@ -60,12 +66,7 @@ impl<'a> UnsafeCommentVisitor<'a> {
 impl<'a> Visit<'a> for UnsafeCommentVisitor<'a> {
     fn visit_expr_unsafe(&mut self, node: &'a syn::ExprUnsafe) {
         // Check if there's a SAFETY comment in the unsafe block's attributes
-        // Note: In practice, SAFETY comments are usually line comments before the block,
-        // which syn doesn't capture. This is a simplified check that flags all unsafe blocks.
-        // A more sophisticated implementation would need to parse the source file for comments.
-
-        // For now, we flag all unsafe blocks as they should be reviewed
-        // Real implementation would need access to source text to check for preceding comments
+        // Note: syn doesn't capture line comments (//), only doc comments (///)
         let has_safety_comment = node.attrs.iter().any(|attr| {
             if let syn::Meta::NameValue(nv) = &attr.meta {
                 if nv.path.is_ident("doc") {

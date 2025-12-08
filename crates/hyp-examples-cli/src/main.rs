@@ -118,6 +118,10 @@ use problem_examples::e18_api_design::e1808_mutable_getter::e1808_entry;
 use problem_examples::e18_api_design::e1809_fallible_new::e1809_entry;
 use problem_examples::e18_api_design::e1810_string_instead_of_str::e1810_entry;
 use problem_examples::e18_api_design::e1812_non_exhaustive_enum::e1812_entry;
+use problem_examples::e19_hygiene::e1901_allowed_names::e1901_entry;
+use problem_examples::e19_hygiene::e1902_inline_directives::e1902_entry;
+use problem_examples::e19_hygiene::e1903_file_location::e1903_entry;
+use problem_examples::e19_hygiene::e1904_unsafe_justification::e1904_entry;
 
 #[derive(Parser)]
 #[command(name = "hyp-examples")]
@@ -332,9 +336,16 @@ fn show_category(category: &str) {
             println!("E1810 - Accepting String instead of &str");
             println!("E1812 - Public enum without #[non_exhaustive]");
         }
+        "e19" => {
+            println!("E19* - Code Hygiene Problems\n");
+            println!("E1901 - Item name/location violates project rules");
+            println!("E1902 - Inline directive violates project rules");
+            println!("E1903 - File location violates project rules");
+            println!("E1904 - Unsafe block requires justification comment");
+        }
         _ => {
             eprintln!("Unknown category: {}", category);
-            eprintln!("Available categories: e10, e11, e12, e13, e14, e15, e16, e17, e18");
+            eprintln!("Available categories: e10, e11, e12, e13, e14, e15, e16, e17, e18, e19");
         }
     }
 }
@@ -477,6 +488,12 @@ fn run_problem(problem: &str) {
             "E1809" => Some(e1809_entry()),
             "E1810" => Some(e1810_entry()),
             "E1812" => Some(e1812_entry()),
+
+            // E19: Code Hygiene
+            "E1901" => Some(e1901_entry()),
+            "E1902" => Some(e1902_entry()),
+            "E1903" => Some(e1903_entry()),
+            "E1904" => Some(e1904_entry()),
 
             _ => None,
         }
@@ -642,6 +659,12 @@ macro_rules! define_problems {
             ("E1809", "Fallible new", e1809_entry),
             ("E1810", "String instead of &str", e1810_entry),
             ("E1812", "Non-exhaustive enum", e1812_entry),
+
+            // E19: Code Hygiene
+            ("E1901", "Allowed names/paths", e1901_entry),
+            ("E1902", "Inline directives", e1902_entry),
+            ("E1903", "File location", e1903_entry),
+            ("E1904", "Unsafe justification", e1904_entry),
         }
     };
 }

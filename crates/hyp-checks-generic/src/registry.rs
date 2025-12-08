@@ -2,7 +2,7 @@
 
 use crate::{
     checker::{Checker, CheckerDescriptor},
-    checkers::{e10_unsafe_code, e11_code_surface_complexity, e12_code_pattern_complexity, e13_error_handling, e14_type_safety, e15_concurrency, e16_memory_safety, e17_performance, e18_api_design},
+    checkers::{e10_unsafe_code, e11_code_surface_complexity, e12_code_pattern_complexity, e13_error_handling, e14_type_safety, e15_concurrency, e16_memory_safety, e17_performance, e18_api_design, e19_hygiene},
     config::AnalyzerConfig,
 };
 
@@ -38,6 +38,8 @@ pub enum CheckerGroup {
     E17,
     /// E18 - API design checkers.
     E18,
+    /// E19 - Code hygiene checkers.
+    E19,
 }
 
 /// All checkers that belong to the E10 group.
@@ -85,6 +87,11 @@ pub fn group_e18() -> Vec<CheckerRegistration> {
     e18_api_design::registry::e18_registrations()
 }
 
+/// All checkers that belong to the E19 group.
+pub fn group_e19() -> Vec<CheckerRegistration> {
+    e19_hygiene::registry::e19_registrations()
+}
+
 /// Build a flat list of registrations for the given groups.
 /// CLIs can use this to register an entire family of checkers at once.
 pub fn checkers_for_groups(groups: &[CheckerGroup]) -> Vec<CheckerRegistration> {
@@ -100,6 +107,7 @@ pub fn checkers_for_groups(groups: &[CheckerGroup]) -> Vec<CheckerRegistration> 
             CheckerGroup::E16 => out.extend(group_e16()),
             CheckerGroup::E17 => out.extend(group_e17()),
             CheckerGroup::E18 => out.extend(group_e18()),
+            CheckerGroup::E19 => out.extend(group_e19()),
         }
     }
     out
@@ -117,5 +125,6 @@ pub fn get_all_checkers() -> Vec<CheckerRegistration> {
         CheckerGroup::E16,
         CheckerGroup::E17,
         CheckerGroup::E18,
+        CheckerGroup::E19,
     ])
 }

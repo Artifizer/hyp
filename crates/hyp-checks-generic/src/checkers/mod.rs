@@ -9,3 +9,4 @@ pub mod e15_concurrency;
 pub mod e16_memory_safety;
 pub mod e17_performance;
 pub mod e18_api_design;
+pub mod e19_hygiene;

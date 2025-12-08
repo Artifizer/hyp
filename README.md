@@ -148,6 +148,7 @@ purely **Rust-specific** issues:
 - **E16** – Memory safety
 - **E17** – Performance
 - **E18** – API design
+- **E19** – Code hygiene (naming rules, file locations, inline directives)
 
 Within each category, individual problems are identified by **checker codes**,
 similar to PEP8 or Clippy lints, e.g.:
@@ -303,6 +304,163 @@ e1.enabled = false
 ```
 
 This is useful when you want to focus on specific problem categories or temporarily ignore a whole class of issues.
+
+### Advanced Configuration: E19 Code Hygiene Checkers
+
+The E19 category provides powerful project-specific enforcement capabilities through configurable rules. These checkers help maintain architectural boundaries, naming conventions, and code organization standards.
+
+#### E1901: Allowed Names and Paths Control
+
+Enforces where specific types of items (structs, enums, functions, etc.) with certain naming patterns can be defined.
+
+**Use cases:**
+- Restrict DTOs to API layer only
+- Prevent wildcard imports in specific modules
+- Enforce naming conventions for specific file locations
+
+**Configuration example:**
+
+```toml
+[checkers.e1901_allowed_names]
+enabled = true
+severity = 3
+categories = ["compliance"]
+
+# Define multiple rules
+[[checkers.e1901_allowed_names.rules]]
+item_types = ["struct"]
+reference_type = "define"
+name_patterns = [".*DTO$"]  # Matches any struct ending with "DTO"
+allowed_paths = ["^.*/api/.*\\.rs$"]  # Only in api/ directory
+message = "DTO struct '{name}' in {path} must be in api/ directory"
+
+[[checkers.e1901_allowed_names.rules]]
+item_types = ["use"]
+reference_type = "refer"
+name_patterns = ["^sqlx::.*\\*$"]  # Matches sqlx::* wildcard imports
+allowed_paths = ["^(?!.*/api/).*$"]  # NOT in api/ directory
+message = "Wildcard import '{name}' not allowed in api/ - use explicit imports"
+```
+
+**Fields:**
+- `item_types`: Array of AST item types (`struct`, `enum`, `trait`, `function`, `const`, `static`, `type`, `use`, `mod`, `impl`)
+- `reference_type`: Either `define` (where item is defined) or `refer` (where item is used)
+- `name_patterns`: Array of regex patterns for item names
+- `allowed_paths`: Array of regex patterns for file paths where items are allowed
+- `message`: Custom violation message with placeholders: `{type}`, `{name}`, `{path}`, `{allowed_paths}`
+
+#### E1902: Inline Directive Control
+
+Prevents bypassing project rules with inline directives like `#[allow(clippy::...)]` in unauthorized locations. Critical for maintaining standards in AI-generated code.
+
+**Use cases:**
+- Block all Clippy bypasses to enforce project-level configuration
+- Restrict warning suppressions to test code only
+- Prevent LLMs from adding `#[allow(...)]` to silence warnings
+
+**Configuration example:**
+
+```toml
+[checkers.e1902_inline_directives]
+enabled = true
+severity = 3
+categories = ["compliance"]
+
+# Block Clippy allows everywhere - force Clippy.toml usage
+[[checkers.e1902_inline_directives.rules]]
+directive_patterns = ["allow\\(clippy::.*\\)"]
+allowed_paths = ["^$"]  # Empty = nowhere allowed
+message = "Clippy bypass '{directive}' in {path} - use Clippy.toml for project-wide config"
+
+# Allow warning suppression only in tests
+[[checkers.e1902_inline_directives.rules]]
+directive_patterns = ["allow\\(warnings\\)", "allow\\(dead_code\\)"]
+allowed_paths = ["^.*/tests/.*\\.rs$", "^.*_test\\.rs$"]
+message = "Warning suppression '{directive}' in {path} - only allowed in tests"
+```
+
+**Fields:**
+- `directive_patterns`: Array of regex patterns matching attribute directives (e.g., `allow\\(clippy::unwrap_used\\)`)
+- `allowed_paths`: Array of regex patterns for file paths where directives are permitted
+- `message`: Custom violation message with placeholders: `{directive}`, `{path}`, `{allowed_paths}`
+
+#### E1903: File Location Control
+
+Enforces that specific files can only exist in designated locations. Useful for configuration files, build scripts, and maintaining project structure.
+
+**Use cases:**
+- Ensure Clippy.toml and rustfmt.toml are at project root
+- Restrict proto files to proto/ directory
+- Enforce SQL migrations location
+- Control where build.rs can exist
+
+**Configuration example:**
+
+```toml
+[checkers.e1903_file_location]
+enabled = true
+severity = 2
+categories = ["compliance"]
+
+# Config files must be at project root
+[[checkers.e1903_file_location.rules]]
+filename_pattern = "^Clippy\\.toml$"
+allowed_paths = ["^[^/]+/Clippy\\.toml$"]
+message = "Clippy.toml in {path} must be at project root"
+
+[[checkers.e1903_file_location.rules]]
+filename_pattern = "^rustfmt\\.toml$"
+allowed_paths = ["^[^/]+/rustfmt\\.toml$"]
+message = "rustfmt.toml in {path} must be at project root"
+
+# Proto files must be in proto/ directory
+[[checkers.e1903_file_location.rules]]
+filename_pattern = ".*\\.proto$"
+allowed_paths = ["^.*/proto/.*\\.proto$"]
+message = "Proto file '{filename}' in {path} must be in proto/ directory"
+```
+
+**Fields:**
+- `filename_pattern`: Regex pattern matching the filename (e.g., `Cargo\\.toml`, `.*\\.proto$`)
+- `allowed_paths`: Array of regex patterns for allowed file paths
+- `message`: Custom violation message with placeholders: `{filename}`, `{path}`, `{allowed_paths}`
+
+#### E1904: Unsafe Justification Requirement
+
+Requires every unsafe block to have a justification comment (e.g., `// SAFETY:`). Optionally restricts unsafe blocks to specific paths.
+
+**Use cases:**
+- Enforce documentation of all unsafe code
+- Restrict unsafe blocks to designated modules (e.g., `unsafe_ops/`)
+- Require specific comment patterns for audit trails
+- Maintain safety invariants documentation
+
+**Configuration example:**
+
+```toml
+[checkers.e1904_unsafe_justification]
+enabled = true
+severity = 3
+categories = ["compliance"]
+require_justification = true
+comment_patterns = ["SAFETY:", "UNSAFE:"]
+
+# Optional: Restrict unsafe to specific paths
+[[checkers.e1904_unsafe_justification.path_rules]]
+comment_patterns = ["SAFETY:"]
+allowed_paths = ["^.*/unsafe_ops/.*\\.rs$", "^.*/ffi/.*\\.rs$"]
+message = "Unsafe blocks in {path} only allowed in unsafe_ops/ or ffi/ directories"
+```
+
+**Fields:**
+- `require_justification`: Boolean - whether to require justification comments (default: true)
+- `comment_patterns`: Array of strings that must appear in comments (e.g., `SAFETY:`, `UNSAFE:`)
+- `path_rules`: Optional array of rules restricting unsafe blocks to specific paths
+  - `comment_patterns`: Required comment patterns for this rule
+  - `allowed_paths`: Regex patterns for paths where unsafe is permitted
+  - `message`: Custom violation message with placeholders: `{path}`, `{allowed_paths}`
+
+**Note:** Due to `syn` crate limitations, only doc comments (`///` or `/** */`) are detected, not regular line comments (`//`). For best results, use doc comments before unsafe blocks.
 
 ## Project Structure
 
