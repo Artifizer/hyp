@@ -6,34 +6,34 @@
 
 ## The Problem Hyp Solves
 
-Rust's compiler excels at preventing memory bugs and race conditions, but it **assumes your logic is intentional**. This means the compiler allows you to get panic at runtime, confuse developers or violate your internal project's conventions.
+Rust's compiler excels at preventing memory bugs and race conditions, but it **assumes your logic is intentional**. This means the compiler allows code that panics at runtime, confuses developers, or violates your project's conventions.
 
-**Hyp fills this gap** by detecting patterns that are technically valid Rust but problematic in practice, especially important when using AI code generation or onboarding new team members.
+**Clippy** and other tools **significantly extends** the compiler's capabilities by detecting potential problems through hundreds of lints. However, Clippy has important limitations:
 
-> Keep in mind that no tool—including Rust's compiler and Hyp—can catch every possible bug or logic error. A comprehensive approach combining multiple tools and thorough manual code review remains essential.
+1. **No custom rules**: Built-in lints only - you cannot define project-specific rules
+2. **Easy to bypass**: Developers (or LLMs) can disable lints with `#[allow(...)]` annotations
+3. **Hard to enforce**: Inline overrides make it difficult to maintain coding standards across large teams
+
+**dylint** addresses the custom rules limitation by allowing you to build your own lints, but it still allows the same bypass mechanisms, making it challenging to control massively AI-generated code.
+
+**Hyp fills this gap** by:
+- Supporting **custom project-specific rules** (tenant filters, architectural boundaries, etc.)
+- **Intentionally preventing per-file bypasses** - rules are enforced at the project level
+- Providing **semantic analysis** for patterns that require understanding code structure
+- Being designed for **AI code generation era** where strict, non-bypassable rules are essential
+
+This is especially important when using AI code generation or onboarding new team members where consistency and safety cannot be compromised.
+
+> Keep in mind that no tool—including Rust's compiler, Clippy, Kani, and Hyp—can catch every possible bug or logic error. A comprehensive approach combining multiple tools and thorough manual code review remains essential.
 
 ## What Hyp Catches (That Other Tools Don't)
 
-Here are few real-world examples of bugs that **compile fine** and pass Clippy, but cause production issues:
+Here are examples of problems that **compile fine** and that **Clippy cannot detect even with all lints enabled**:
 
 ```rust
-// Example 1: Division by zero from user input
-// Clippy - compiles, crashes at runtime
-// Hyp  - detects E1402 (potential division by zero)
-pub fn calculate_average(total: i32, count: i32) -> i32 {
-    total / count  // Panics when count is 0!
-}
-
-// Example 2: Integer overflow in production builds
-// Clippy - compiles, prevented in debug, silently wraps in release mode
-// Hyp - detects E1401 (potential integer overflow)
-fn calculate_total_price(price: i32, quantity: i32) -> i32 {
-    price * quantity  // Overflows when price=50000, quantity=50000
-}
-
-// Example 3: Unbounded thread spawning
-// Clipply - Compiles, runs fine in tests, exhausts resources in production
-// Hyp - detects: E1511 (unbounded spawning in loop)
+// Example 1: Unbounded thread spawning (NO Clippy lint exists)
+// Clippy: No lint - compiles, runs fine in tests, exhausts resources in production
+// Hyp: Detects E1511 (unbounded spawning in loop)
 fn process_items(items: Vec<String>) {
     for item in items {
         thread::spawn(move || {
@@ -42,25 +42,68 @@ fn process_items(items: Vec<String>) {
     }
 }
 
-// Example 4: Expensive regex compilation in hot loop
-// Clippy - Compiles, works correctly, kills performance
-// Hyp - detects E1712 (expensive operation in loop)
-fn extract_numbers(lines: &[String]) -> Vec<i32> {
-    lines.iter().map(|line| {
-        let re = Regex::new(r"\d+").unwrap();  // Compiles regex 1000x!
-        re.find(line).unwrap().as_str().parse().unwrap()
-    }).collect()
+// Example 2: Higher-ranked trait bounds (HRTB) complexity (NO Clippy lint exists)
+// Clippy: No lint - compiles, but very confusing for team members
+// Hyp: Detects E1209 (HRTB complexity) - helps maintain code readability
+fn complex_closure<F>(f: F)
+where
+    F: for<'a, 'b> Fn(&'a str, &'b str) -> &'a str  // HRTB - hard to understand!
+{
+    let result = f("hello", "world");
+    // ...
 }
 
-// Example 5: Narrowing conversion losing data
-// Clippy - Compiles with 'as', silently truncates, produces wrong results
-// Hyp - detects E1404 (narrowing conversion without validation)
-fn process_large_number(value: u64) -> u8 {
-    value as u8  // 256 becomes 0, 257 becomes 1, etc.
+// Example 3: Deep nesting in loops (Clippy cognitive_complexity is different)
+// Clippy: cognitive_complexity counts all branches, not loop-specific nesting
+// Hyp: Detects E1102 (deeply nested logic specifically in loops)
+fn process_matrix(data: Vec<Vec<Vec<i32>>>) -> i32 {
+    let mut sum = 0;
+    for layer in &data {
+        for row in layer {
+            for cell in row {
+                if *cell > 0 {
+                    if *cell % 2 == 0 {
+                        if *cell < 100 {  // 6 levels deep in loop!
+                            sum += cell;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    sum
 }
 
-// There are many more examples, see hyp-examples/
-// ...
+// Example 4: Missing tenant_id filter in multi-tenant SaaS (Custom project rule)
+// Clippy: Cannot enforce project-specific business logic
+// Hyp: Custom checker ensures all SeaORM queries include tenant isolation
+async fn get_users(db: &DatabaseConnection) -> Result<Vec<User>> {
+    User::find()
+        // .filter(user::Column::TenantId.eq(tenant_id))  // MISSING! Security bug!
+        .all(db)
+        .await
+}
+
+// Example 5: DTO defined outside API layer (Custom project rule)
+// Clippy: Cannot enforce architectural boundaries
+// Hyp: Custom checker ensures DTOs only exist in api/ folder
+// File: src/database/models.rs
+#[derive(Serialize)]  // ❌ DTO in wrong layer!
+pub struct UserResponse {  // Should be in api/dto/user_response.rs
+    pub id: i64,
+    pub email: String,
+}
+
+// Example 6: Clippy rule bypassed - confuses newcomers and violates team standards
+// Clippy: Can be disabled with #[allow] - no way to enforce globally
+// Hyp: Cannot be bypassed at file level - enforces team standards
+#[allow(clippy::unwrap_used)]  // ❌ Junior dev or LLM bypassed the rule!
+pub fn process_user_input(data: Option<String>) -> String {
+    data.unwrap()  // Clippy won't warn - but this WILL panic in production!
+    // Team policy: "Never use unwrap on user input" - but Clippy can't enforce it
+}
+
+// See hyp-examples/ for 100+ more patterns Hyp detects
 ```
 
 ## Quick start
