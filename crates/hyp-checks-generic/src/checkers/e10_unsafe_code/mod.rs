@@ -3,7 +3,6 @@
 pub mod e1001_direct_panic;
 pub mod e1002_direct_unwrap_expect;
 pub mod e1003_unsafe_code;
-pub mod e1004_unsafe_without_comment;
 pub mod e1005_raw_pointer_deref;
 pub mod e1006_unsafe_transmute;
 pub mod e1007_null_pointer_deref;
@@ -23,7 +22,6 @@ pub mod registry;
 pub use e1001_direct_panic::{E1001Config, E1001DirectPanic};
 pub use e1002_direct_unwrap_expect::{E1002Config, E1002DirectUnwrapExpect};
 pub use e1003_unsafe_code::{E1003Config, E1003UnsafeCode};
-pub use e1004_unsafe_without_comment::{E1004Config, E1004UnsafeWithoutComment};
 pub use e1005_raw_pointer_deref::{E1005Config, E1005RawPointerDeref};
 pub use e1006_unsafe_transmute::{E1006Config, E1006UnsafeTransmute};
 pub use e1007_null_pointer_deref::{E1007Config, E1007NullPointerDeref};

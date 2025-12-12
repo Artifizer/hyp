@@ -72,7 +72,7 @@ pub fn e1018_bad_transmute_with_checks() {
     const _: () = assert!(std::mem::size_of::<u32>() == std::mem::size_of::<f32>());
 
     // PROBLEM E1003: Direct use of unsafe code
-    // PROBLEM E1004: No safety documentation
+    // PROBLEM E1904: No safety documentation
     // PROBLEM E1018: transmute is completely prohibited
     let _y: f32 = unsafe { std::mem::transmute(x) };
 }

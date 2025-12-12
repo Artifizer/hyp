@@ -1,8 +1,6 @@
 //! E1904: Unsafe justification requirement
 //!
 //! Requires every unsafe block to have a justification comment (e.g., `// SAFETY:`).
-//! This is a hygiene-focused version of E1004 with configurable comment patterns
-//! and path restrictions for where unsafe blocks are allowed.
 
 use crate::{checker::Checker, define_checker, violation::Violation};
 use regex::Regex;

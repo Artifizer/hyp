@@ -17,7 +17,7 @@
 pub fn e1011_bad_uninitialized_memory() {
     // PROBLEM E1003: Direct use of unsafe code
     unsafe {
-        // PROBLEM E1004: No safety documentation
+        // PROBLEM E1904: No safety documentation
         // PROBLEM E1011: Reading uninitialized memory
         let x: i32 = std::mem::MaybeUninit::uninit().assume_init();
         let _value = x; // Reading garbage

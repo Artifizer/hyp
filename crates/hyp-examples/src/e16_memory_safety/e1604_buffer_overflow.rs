@@ -70,7 +70,7 @@ pub fn e1604_bad_overflow() {
 
     // PROBLEM E1003: Direct use of unsafe code
     unsafe {
-        // PROBLEM E1004: No safety documentation
+        // PROBLEM E1904: No safety documentation
         // PROBLEM E1604: Actual buffer overflow in unsafe code
         let ptr = buffer.as_mut_ptr();
         *ptr.add(index) = 42;

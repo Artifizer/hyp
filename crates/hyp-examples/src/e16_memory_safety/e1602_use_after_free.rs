@@ -66,7 +66,7 @@ pub fn e1602_bad_use_after_free() {
 
     // PROBLEM E1003: Direct use of unsafe code
     unsafe {
-        // PROBLEM E1004: No safety documentation
+        // PROBLEM E1904: No safety documentation
         // PROBLEM E1602: Accessing freed memory
         let _value = *ptr;
     }
@@ -113,7 +113,7 @@ pub fn e1602_good_rc() {
 
 /// GOOD: Return owned data instead of pointer
 pub fn e1602_good_return_owned() -> i32 {
-    
+
     42 // Return the value, not a pointer
 }
 

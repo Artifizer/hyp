@@ -8,7 +8,6 @@ use clap::{Parser, Subcommand};
 use problem_examples::e10_unsafe_code::e1001_direct_panic::e1001_entry;
 use problem_examples::e10_unsafe_code::e1002_direct_unwrap_expect::e1002_entry;
 use problem_examples::e10_unsafe_code::e1003_unsafe_code::e1003_entry;
-use problem_examples::e10_unsafe_code::e1004_unsafe_without_comment::e1004_entry;
 use problem_examples::e10_unsafe_code::e1005_raw_pointer_deref::e1005_entry;
 use problem_examples::e10_unsafe_code::e1006_unsafe_transmute::e1006_entry;
 use problem_examples::e10_unsafe_code::e1007_null_pointer_deref::e1007_entry;
@@ -202,7 +201,6 @@ fn show_category(category: &str) {
             println!("E1001 - Direct call of panic!() - crashes instead of returning errors");
             println!("E1002 - Direct use of unwrap()/expect() - crashes program on None/Err");
             println!("E1003 - Direct use of unsafe blocks/functions");
-            println!("E1004 - Unsafe block without SAFETY comment explaining invariants");
             println!("E1005 - Dereferencing raw pointers without null/alignment checks");
             println!("E1006 - Transmute without verifying size/alignment compatibility");
             println!("E1007 - Potential null pointer dereference");
@@ -362,7 +360,6 @@ fn run_problem(problem: &str) {
             "E1001" => Some(e1001_entry()),
             "E1002" => Some(e1002_entry()),
             "E1003" => Some(e1003_entry()),
-            "E1004" => Some(e1004_entry()),
             "E1005" => Some(e1005_entry()),
             "E1006" => Some(e1006_entry()),
             "E1007" => Some(e1007_entry()),
@@ -533,7 +530,6 @@ macro_rules! define_problems {
             ("E1001", "Direct panic", e1001_entry),
             ("E1002", "Direct unwrap/expect crashes", e1002_entry),
             ("E1003", "Unsafe code", e1003_entry),
-            ("E1004", "Unsafe without comment", e1004_entry),
             ("E1005", "Raw pointer deref", e1005_entry),
             ("E1006", "Unsafe transmute", e1006_entry),
             ("E1007", "Null pointer deref", e1007_entry),

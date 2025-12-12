@@ -84,7 +84,6 @@ These require more sophisticated AST analysis or control flow understanding.
 | Supported | Code | Name | Severity | LLM Clarity | Impl Difficulty | Category |
 |-----------|------|------|----------|-------------|-----------------|----------|
  [x] | E1003 | Direct use of unsafe code | HIGH | 4 | 3 | E10 Unsafe Code |
- [x] | E1004 | Unsafe without comments | HIGH | 4 | 3 | E10 Unsafe Code |
  [x] | E1007 | Dereferencing null pointer | HIGH | 4 | 3 | E10 Unsafe Code |
  [x] | E1008 | Unsafe trait implementation | HIGH | 4 | 3 | E10 Unsafe Code |
  [x] | E1010 | Mutable static without synchronization | HIGH | 4 | 3 | E10 Unsafe Code |
@@ -123,6 +122,7 @@ These require more sophisticated AST analysis or control flow understanding.
  [x] | E1201 | Overly complex generics | MED | 4 | 3 | E12 Pattern Complexity |
  [x] | E1203 | Complicated borrowing patterns | MED | 4 | 4 | E12 Pattern Complexity |
  [x] | E1210 | Recursive type definitions | HIGH | 4 | 4 | E12 Pattern Complexity |
+ [x] | E1904 | Unsafe without comments | HIGH | 4 | 3 | E10 Unsafe Code |
 
 ### Phase 3: Complex & Unclear (26 checkers)
 

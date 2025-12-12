@@ -72,7 +72,7 @@ pub fn e1507_bad_static_mut() {
         thread::spawn(|| {
             // PROBLEM E1003: Direct use of unsafe code
             unsafe {
-                // PROBLEM E1004: No safety documentation
+                // PROBLEM E1904: No safety documentation
                 // PROBLEM E1507: Data race on COUNTER
                 COUNTER += 1;
             }

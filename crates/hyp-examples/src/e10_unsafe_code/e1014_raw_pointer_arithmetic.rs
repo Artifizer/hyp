@@ -60,7 +60,7 @@ pub fn e1014_bad_loop_pointer_arithmetic(data: &[i32]) -> i32 {
 
     // PROBLEM E1003: Direct use of unsafe code
     unsafe {
-        // PROBLEM E1004: No safety documentation
+        // PROBLEM E1904: No safety documentation
         // PROBLEM E1014: Manual loop with pointer arithmetic instead of iterator
         for i in 0..data.len() {
             let element_ptr = ptr.add(i);

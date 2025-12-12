@@ -3,8 +3,7 @@
 /// LLM confusion: 3 (MEDIUM)
 ///
 /// Description: Requires every unsafe block to have a justification comment
-/// (e.g., `// SAFETY:`). This is a hygiene-focused version of E1004 with
-/// configurable comment patterns and path restrictions for where unsafe is allowed.
+/// (e.g., `// SAFETY:`).
 ///
 /// ## Why This Matters
 ///

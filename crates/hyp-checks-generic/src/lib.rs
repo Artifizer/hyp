@@ -17,7 +17,7 @@
 //! use hyp_analyzer::{Analyzer, config::AnalyzerConfig};
 //! use std::path::Path;
 //!
-//! let analyzer = Analyzer::with_defaults();
+//! let analyzer = Analyzer::with_defaults().expect("Failed to create analyzer");
 //! let violations = analyzer.analyze(Path::new("src")).unwrap();
 //!
 //! for violation in violations {
@@ -56,7 +56,7 @@ pub use violation::{CheckerSeverity, Severity, Violation};
 
 // Re-export checker configs for convenience
 pub use checkers::e10_unsafe_code::{
-    E1001Config, E1002Config, E1003Config, E1004Config, E1007Config, E1008Config, E1010Config,
+    E1001Config, E1002Config, E1003Config, E1007Config, E1008Config, E1010Config,
     E1013Config, E1014Config, E1015Config, E1016Config,
 };
 pub use checkers::e11_code_surface_complexity::{
@@ -85,6 +85,9 @@ pub use checkers::e17_performance::{
 pub use checkers::e18_api_design::{
     E1801Config, E1802Config, E1803Config, E1804Config, E1805Config, E1806Config, E1807Config,
     E1808Config, E1809Config, E1810Config,
+};
+pub use checkers::e19_hygiene::{
+    E1901Config, E1902Config, E1903Config, E1904Config,
 };
 
 /// Errors that can occur during code analysis

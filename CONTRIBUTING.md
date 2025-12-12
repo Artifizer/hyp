@@ -104,13 +104,13 @@ patterns in:
 
 2. **Create the checker file**
    - Place it in the appropriate module, e.g.
-     - `crates/hyp-checks-generic/src/checkers/e10/e1004_unsafe_without_comment.rs`
+     - `crates/hyp-checks-generic/src/checkers/e10/e1001_direct_panic.rs`
    - Use `define_checker!` to declare:
-     - `code` (e.g. `"E1004"`)
+     - `code` (e.g. `"E1001"`)
      - `name`
      - `suggestions`
      - `target_items` (e.g. `[Function]`)
-     - `config_entry_name` (TOML key, e.g. `"e1004_unsafe_without_comment"`)
+     - `config_entry_name` (TOML key, e.g. `"e1001_direct_panic"`)
      - `config` struct fields and defaults
      - `check_item` body that walks the `syn` AST and returns `Vec<Violation>`
 

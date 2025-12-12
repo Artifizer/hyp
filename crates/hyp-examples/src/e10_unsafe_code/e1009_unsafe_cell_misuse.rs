@@ -30,7 +30,7 @@ impl<T> BadCell<T> {
     pub fn e1009_bad_get_mut(&self) -> &mut T {
         // PROBLEM E1003: Direct use of unsafe code
         unsafe {
-            // PROBLEM E1004: No safety documentation
+            // PROBLEM E1904: No safety documentation
             // DANGER: This creates aliasing mutable references
             &mut *self.value.get()
         }

@@ -19,7 +19,7 @@ pub fn e1006_bad_unsafe_transmute() {
     let x: u32 = 42;
 
     // PROBLEM E1003: Direct use of unsafe code
-    // PROBLEM E1004: No safety documentation
+    // PROBLEM E1904: No safety documentation
     // PROBLEM E1006: transmute without verifying size/alignment compatibility
     let _y: f32 = unsafe { std::mem::transmute(x) };
 }

@@ -70,7 +70,7 @@ pub fn e1608_bad_double_free() {
 
     // PROBLEM E1003: Direct use of unsafe code
     unsafe {
-        // PROBLEM E1004: No safety documentation
+        // PROBLEM E1904: No safety documentation
         // PROBLEM E1608: Dropping twice
         ManuallyDrop::drop(&mut manual);
         ManuallyDrop::drop(&mut manual);

@@ -18,7 +18,7 @@ pub fn e1007_bad_null_pointer_deref(input: i32) {
     if input > 0 {
         // PROBLEM E1003: Direct use of unsafe code
         unsafe {
-            // PROBLEM E1004: No safety documentation
+            // PROBLEM E1904: No safety documentation
             // PROBLEM E1007: Dereferencing null pointer (undefined behavior)
             let _value = *ptr;
         }

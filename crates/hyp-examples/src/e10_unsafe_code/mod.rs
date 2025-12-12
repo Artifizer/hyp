@@ -4,7 +4,6 @@
 pub mod e1001_direct_panic;
 pub mod e1002_direct_unwrap_expect;
 pub mod e1003_unsafe_code;
-pub mod e1004_unsafe_without_comment;
 pub mod e1005_raw_pointer_deref;
 pub mod e1006_unsafe_transmute;
 pub mod e1007_null_pointer_deref;

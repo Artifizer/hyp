@@ -67,7 +67,7 @@ pub fn e1610_bad_unaligned() {
 
     // PROBLEM E1003: Direct use of unsafe code
     unsafe {
-        // PROBLEM E1004: No safety documentation
+        // PROBLEM E1904: No safety documentation
         // PROBLEM E1610: Casting to u64 pointer may not be aligned
         let ptr64 = ptr.add(1) as *const u64;
         let _value = *ptr64;

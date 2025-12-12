@@ -21,7 +21,7 @@ pub fn e1005_bad_raw_pointer_deref() {
 
     // PROBLEM E1003: Direct use of unsafe code
     unsafe {
-        // PROBLEM E1004: No safety documentation
+        // PROBLEM E1904: No safety documentation
         // PROBLEM E1005: Dereferencing dangling pointer (undefined behavior)
         let _value = *ptr;
     }
@@ -47,7 +47,7 @@ pub fn e1005_good_use_references() -> i32 {
 
 /// GOOD: Return owned data instead of pointers
 pub fn e1005_good_return_owned() -> i32 {
-    
+
     MAGIC_I32 // Return by value, no pointer needed
 }
 
