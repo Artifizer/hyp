@@ -7,7 +7,8 @@ use crate::{
 };
 
 /// A factory function that creates a checker instance from config.
-pub type CheckerFactory = fn(&AnalyzerConfig) -> Option<Box<dyn Checker>>;
+/// Returns Ok(Some(checker)) if enabled, Ok(None) if disabled, Err if config is invalid.
+pub type CheckerFactory = fn(&AnalyzerConfig) -> Result<Option<Box<dyn Checker>>, String>;
 
 /// Registry entry for a checker.
 pub struct CheckerRegistration {
@@ -15,6 +16,8 @@ pub struct CheckerRegistration {
     pub descriptor: CheckerDescriptor,
     /// Factory function to create the checker.
     pub factory: CheckerFactory,
+    /// Configuration entry name for this checker (for validation).
+    pub config_entry_name: &'static str,
 }
 
 /// Logical groups of checkers (e.g. by problem family like e10, e11, ...).

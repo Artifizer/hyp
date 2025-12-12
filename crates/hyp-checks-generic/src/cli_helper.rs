@@ -81,20 +81,85 @@ pub struct CliOptions {
 }
 
 /// Build an analyzer from an explicit list of checker registrations.
+///
+/// # Errors
+/// Returns an error if configuration is invalid (unknown checker names or wrong types).
 pub fn build_analyzer_from_registrations(
     config: AnalyzerConfig,
     filters: AnalyzerFilters,
     registrations: Vec<CheckerRegistration>,
-) -> Analyzer {
+) -> Result<Analyzer> {
     Analyzer::new_with_checkers(config, filters, registrations)
 }
 
+/// Build an analyzer from registrations, skipping unknown-checker validation.
+///
+/// Use this when you've already validated the config separately (e.g., against all checkers
+/// before CLI filtering was applied).
+///
+/// # Errors
+/// Returns an error if configuration has wrong parameter types.
+pub fn build_analyzer_from_registrations_skip_validation(
+    config: AnalyzerConfig,
+    filters: AnalyzerFilters,
+    registrations: Vec<CheckerRegistration>,
+) -> Result<Analyzer> {
+    Analyzer::new_with_checkers_skip_unknown_validation(config, filters, registrations)
+}
+
+/// Validate configuration against a set of checker registrations.
+///
+/// This checks that:
+/// - All configured checker names are known
+/// - All configured parameters have correct types
+///
+/// # Errors
+/// Returns an error if any validation fails.
+pub fn validate_config_against_registrations(
+    config: &AnalyzerConfig,
+    registrations: &[CheckerRegistration],
+) -> Result<()> {
+    use std::collections::HashSet;
+
+    // Build a set of known config entry names
+    let known_config_names: HashSet<&str> = registrations
+        .iter()
+        .map(|r| r.config_entry_name)
+        .collect();
+
+    // Validate that all configured checker names are known
+    for configured_name in config.configured_checker_keys() {
+        if !known_config_names.contains(configured_name.as_str()) {
+            let mut available: Vec<_> = known_config_names.into_iter().collect();
+            available.sort();
+            return Err(crate::AnalyzerError::Config(format!(
+                "Unknown checker '{}' in configuration. Available checkers: {}",
+                configured_name,
+                available.join(", ")
+            )));
+        }
+    }
+
+    // Validate config types by trying to deserialize each configured checker
+    for registration in registrations {
+        if config.checkers.contains_key(registration.config_entry_name) {
+            // Try to create the checker - this will fail if config types are wrong
+            (registration.factory)(config).map_err(crate::AnalyzerError::Config)?;
+        }
+    }
+
+    Ok(())
+}
+
 /// Build an analyzer from one or more logical checker groups.
+///
+/// # Errors
+/// Returns an error if configuration is invalid (unknown checker names or wrong types).
 pub fn build_analyzer_from_groups(
     config: AnalyzerConfig,
     filters: AnalyzerFilters,
     groups: &[CheckerGroup],
-) -> Analyzer {
+) -> Result<Analyzer> {
     let registrations = checkers_for_groups(groups);
     Analyzer::new_with_checkers(config, filters, registrations)
 }
@@ -211,7 +276,7 @@ pub fn print_checker_list_from_registrations(
     }
 
     let registrations = filter_registrations_with_config(registrations, opts, Some(&config));
-    let analyzer = build_analyzer_from_registrations(config, filters, registrations);
+    let analyzer = build_analyzer_from_registrations(config, filters, registrations)?;
 
     println!("\nEligible Checkers:\n");
     println!("{:<8} {:<30} {:<10} Categories", "Code", "Name", "Severity");
@@ -255,7 +320,7 @@ pub fn print_guidelines_from_registrations(
     }
 
     let registrations = filter_registrations_with_config(registrations, opts, Some(&config));
-    let analyzer = build_analyzer_from_registrations(config, filters, registrations);
+    let analyzer = build_analyzer_from_registrations(config, filters, registrations)?;
 
     println!("Do not use the following patterns:\n");
 
@@ -289,10 +354,18 @@ where
     }
     filters.check_tests = opts.check_tests;
 
-    // 3. Get registrations, apply include/exclude and config category filtering, build analyzer
+    // 3. Get ALL registrations first for config validation
+    let all_registrations = make_registrations();
+
+    // 4. Validate config against ALL known checkers (before CLI filtering)
+    validate_config_against_registrations(&config, &all_registrations)?;
+
+    // 5. Apply CLI include/exclude and config category filtering
     let registrations =
-        filter_registrations_with_config(make_registrations(), &opts, Some(&config));
-    let analyzer = build_analyzer_from_registrations(config, filters, registrations);
+        filter_registrations_with_config(all_registrations, &opts, Some(&config));
+
+    // 6. Build analyzer with filtered registrations (skip validation since we already did it)
+    let analyzer = build_analyzer_from_registrations_skip_validation(config, filters, registrations)?;
 
     // 4. Print enabled checkers (non-verbose mode)
     if opts.verbose == 0 {
@@ -804,7 +877,7 @@ where
     // Create analyzer with all checkers enabled
     let config = AnalyzerConfig::default();
     let registrations = registrations_fn();
-    let analyzer = Analyzer::new_with_checkers(config, AnalyzerFilters::default(), registrations);
+    let analyzer = Analyzer::new_with_checkers(config, AnalyzerFilters::default(), registrations)?;
 
     let mut all_validations: Vec<FunctionValidation> = Vec::new();
     let mut files_processed = 0;

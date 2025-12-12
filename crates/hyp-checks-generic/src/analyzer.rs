@@ -119,27 +119,68 @@ impl Analyzer {
     }
 
     /// Create a new analyzer with the given configuration
-    pub fn new(config: AnalyzerConfig) -> Self {
+    pub fn new(config: AnalyzerConfig) -> Result<Self> {
         Self::new_with_filters(config, AnalyzerFilters::default())
     }
 
     /// Create a new analyzer with configuration and filters (uses default checkers)
-    pub fn new_with_filters(config: AnalyzerConfig, filters: AnalyzerFilters) -> Self {
+    pub fn new_with_filters(config: AnalyzerConfig, filters: AnalyzerFilters) -> Result<Self> {
         Self::new_with_checkers(config, filters, crate::registry::get_all_checkers())
     }
 
     /// Create a new analyzer with configuration, filters, and registered checkers
+    ///
+    /// # Errors
+    /// Returns an error if:
+    /// - Configuration contains unknown checker names
+    /// - Configuration contains invalid parameter types
     pub fn new_with_checkers(
         config: AnalyzerConfig,
         filters: AnalyzerFilters,
         checker_factories: Vec<crate::registry::CheckerRegistration>,
-    ) -> Self {
+    ) -> Result<Self> {
+        // Build a set of known config entry names
+        let known_config_names: std::collections::HashSet<&str> = checker_factories
+            .iter()
+            .map(|r| r.config_entry_name)
+            .collect();
+
+        // Validate that all configured checker names are known
+        for configured_name in config.configured_checker_keys() {
+            if !known_config_names.contains(configured_name.as_str()) {
+                let mut available: Vec<_> = known_config_names.into_iter().collect();
+                available.sort();
+                return Err(AnalyzerError::Config(format!(
+                    "Unknown checker '{}' in configuration. Available checkers: {}",
+                    configured_name,
+                    available.join(", ")
+                )));
+            }
+        }
+
+        Self::new_with_checkers_skip_unknown_validation(config, filters, checker_factories)
+    }
+
+    /// Create a new analyzer, skipping validation for unknown checker names.
+    ///
+    /// Use this when you've already validated the config separately (e.g., against all checkers
+    /// before CLI filtering was applied).
+    ///
+    /// # Errors
+    /// Returns an error if configuration contains invalid parameter types.
+    pub fn new_with_checkers_skip_unknown_validation(
+        config: AnalyzerConfig,
+        filters: AnalyzerFilters,
+        checker_factories: Vec<crate::registry::CheckerRegistration>,
+    ) -> Result<Self> {
         let mut all_checkers: Vec<Box<dyn Checker>> = Vec::new();
 
         // Create checkers using the provided factories
-        for registration in checker_factories {
-            if let Some(checker) = (registration.factory)(&config) {
-                all_checkers.push(checker);
+        for registration in &checker_factories {
+            match (registration.factory)(&config) {
+                Ok(Some(checker)) => all_checkers.push(checker),
+                Ok(None) => {} // Checker disabled
+                Err(e) => return Err(AnalyzerError::Config(e)),
             }
         }
 
@@ -165,15 +206,15 @@ impl Analyzer {
             })
             .collect();
 
-        Self {
+        Ok(Self {
             config,
             checkers,
             filters,
-        }
+        })
     }
 
     /// Create analyzer with default configuration
-    pub fn with_defaults() -> Self {
+    pub fn with_defaults() -> Result<Self> {
         Self::new(AnalyzerConfig::default())
     }
 
@@ -311,7 +352,7 @@ mod tests {
         )
         .unwrap();
 
-        let analyzer = Analyzer::with_defaults();
+        let analyzer = Analyzer::with_defaults().unwrap();
         let violations = analyzer.analyze_file(file.path()).unwrap();
 
         assert!(violations.iter().any(|v| v.code == "E1001"));
@@ -326,9 +367,61 @@ mod tests {
         }
         writeln!(file, "}}").unwrap();
 
-        let analyzer = Analyzer::with_defaults();
+        let analyzer = Analyzer::with_defaults().unwrap();
         let violations = analyzer.analyze_file(file.path()).unwrap();
 
         assert!(violations.iter().any(|v| v.code == "E1106"));
+    }
+
+    #[test]
+    fn test_unknown_checker_name_rejected() {
+        let toml = r#"
+            [checkers.unknown_checker_name]
+            enabled = true
+        "#;
+        let config = AnalyzerConfig::from_toml(toml).unwrap();
+        let result = Analyzer::new(config);
+
+        match result {
+            Err(AnalyzerError::Config(msg)) => {
+                assert!(msg.contains("Unknown checker"), "Error should mention 'Unknown checker': {}", msg);
+                assert!(msg.contains("unknown_checker_name"), "Error should mention the checker name: {}", msg);
+            }
+            Err(e) => panic!("Expected Config error, got {:?}", e),
+            Ok(_) => panic!("Expected error for unknown checker name"),
+        }
+    }
+
+    #[test]
+    fn test_invalid_config_type_rejected() {
+        let toml = r#"
+            [checkers.e1001_direct_panic]
+            enabled = "not_a_boolean"
+        "#;
+        let config = AnalyzerConfig::from_toml(toml).unwrap();
+        let result = Analyzer::new(config);
+
+        match result {
+            Err(AnalyzerError::Config(msg)) => {
+                assert!(msg.contains("Invalid configuration"), "Error should mention 'Invalid configuration': {}", msg);
+                assert!(msg.contains("invalid type"), "Error should mention 'invalid type': {}", msg);
+            }
+            Err(e) => panic!("Expected Config error, got {:?}", e),
+            Ok(_) => panic!("Expected error for invalid config type"),
+        }
+    }
+
+    #[test]
+    fn test_valid_config_accepted() {
+        let toml = r#"
+            [checkers.e1001_direct_panic]
+            enabled = true
+            severity = 2
+            categories = ["operations"]
+        "#;
+        let config = AnalyzerConfig::from_toml(toml).unwrap();
+        let result = Analyzer::new(config);
+
+        assert!(result.is_ok(), "Valid config should be accepted: {:?}", result.err());
     }
 }

@@ -177,15 +177,16 @@ macro_rules! register_checker {
         $crate::registry::CheckerRegistration {
             descriptor: <$checker>::default().descriptor(),
             factory: |config: &$crate::config::AnalyzerConfig| {
-                let cfg: $config = config.get_checker_config(<$checker>::CONFIG_ENTRY_NAME);
+                let cfg: $config = config.get_checker_config(<$checker>::CONFIG_ENTRY_NAME)?;
                 if cfg.enabled {
                     let mut checker = <$checker>::default();
                     let _ = checker.set_config(Box::new(cfg));
-                    Some(Box::new(checker))
+                    Ok(Some(Box::new(checker)))
                 } else {
-                    None
+                    Ok(None)
                 }
             },
+            config_entry_name: <$checker>::CONFIG_ENTRY_NAME,
         }
     };
 }

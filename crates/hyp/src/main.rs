@@ -54,6 +54,10 @@ struct Cli {
     /// Check unit tests (by default, tests are skipped)
     #[arg(long, global = true)]
     check_tests: bool,
+
+    /// Path to configuration file (default: Hyp.toml in current or parent directories)
+    #[arg(short = 'c', long, global = true)]
+    config: Option<PathBuf>,
 }
 
 #[derive(Subcommand)]
@@ -88,9 +92,10 @@ fn main() -> Result<()> {
     match &cli.command {
         Some(Commands::Check { path }) => {
             let source = path.clone().unwrap_or_else(|| PathBuf::from("."));
+            let config_path = cli.config.clone().unwrap_or_else(|| find_config_file());
             let opts = CliOptions {
                 source,
-                config_path: find_config_file(),
+                config_path,
                 severity: cli.severity,
                 categories,
                 all: cli.all,
@@ -117,9 +122,10 @@ fn main() -> Result<()> {
         }
 
         Some(Commands::List) => {
+            let config_path = cli.config.clone().unwrap_or_else(|| find_config_file());
             let opts = CliOptions {
                 source: PathBuf::from("."),
-                config_path: find_config_file(),
+                config_path,
                 severity: cli.severity,
                 categories,
                 all: cli.all,
@@ -133,9 +139,10 @@ fn main() -> Result<()> {
         }
 
         Some(Commands::Guideline) => {
+            let config_path = cli.config.clone().unwrap_or_else(|| find_config_file());
             let opts = CliOptions {
                 source: PathBuf::from("."),
-                config_path: find_config_file(),
+                config_path,
                 severity: cli.severity,
                 categories,
                 all: cli.all,
@@ -156,9 +163,10 @@ fn main() -> Result<()> {
             println!("Source directory: {}\n", source.display());
 
             let registrations = if cli.include.is_some() || cli.exclude.is_some() {
+                let config_path = cli.config.clone().unwrap_or_else(|| find_config_file());
                 let opts = CliOptions {
                     source: source.clone(),
-                    config_path: find_config_file(),
+                    config_path,
                     severity: cli.severity,
                     categories: None,
                     all: cli.all,
