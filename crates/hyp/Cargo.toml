@@ -1,0 +1,17 @@
+[package]
+name = "hyp"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "CLI tool for Hyp Rust code analyzer"
+
+[[bin]]
+name = "hyp"
+path = "src/main.rs"
+
+[dependencies]
+hyp-checks-generic = { path = "../hyp-checks-generic" }
+clap = { workspace = true, features = ["derive"] }
+anyhow = { workspace = true }

@@ -1,0 +1,19 @@
+# Kani configuration for hyp-examples-cli
+# This focuses verification on our code and avoids third-party dependencies
+
+[package]
+# Only verify harnesses in this package
+name = "hyp-examples-cli"
+
+[verification]
+# Reduce verification scope to avoid third-party code
+# Focus on our problem examples only
+stub-third-party = true
+
+# Limit verification depth to avoid analyzing deep standard library code
+unwind = 10
+
+[output]
+# Make output more readable
+verbose = false
+quiet = false

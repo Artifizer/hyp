@@ -1,0 +1,28 @@
+[package]
+name = "hyp-checks-generic"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Rust code analyzer for detecting common problems"
+
+[lib]
+name = "hyp_analyzer"
+path = "src/lib.rs"
+
+[dependencies]
+syn = { version = "2.0", features = ["full", "extra-traits", "visit"] }
+quote = "1.0"
+proc-macro2 = { version = "1.0", features = ["span-locations"] }
+walkdir = "2.0"
+regex = "1"
+toml = "0.8"
+thiserror = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+serde_yaml = "0.9"
+paste = "1.0"
+
+[dev-dependencies]
+tempfile = "3.0"

@@ -1,0 +1,40 @@
+//! E10 - Unsafe code and panic-related checkers.
+
+pub mod e1001_direct_panic;
+pub mod e1002_direct_unwrap_expect;
+pub mod e1003_unsafe_code;
+pub mod e1004_unsafe_without_comment;
+pub mod e1005_raw_pointer_deref;
+pub mod e1006_unsafe_transmute;
+pub mod e1007_null_pointer_deref;
+pub mod e1008_unsafe_trait_impl;
+pub mod e1009_unsafe_cell_misuse;
+pub mod e1010_mutable_static_wo_sync;
+pub mod e1011_uninitialized_memory;
+pub mod e1012_unsafe_auto_trait;
+pub mod e1013_union_field_access;
+pub mod e1014_raw_pointer_arithmetic;
+pub mod e1015_unwrap_expect_wo_context;
+pub mod e1016_mutex_unwrap;
+pub mod e1017_todo_unimplemented;
+pub mod e1018_prohibit_transmute;
+pub mod registry;
+
+pub use e1001_direct_panic::{E1001Config, E1001DirectPanic};
+pub use e1002_direct_unwrap_expect::{E1002Config, E1002DirectUnwrapExpect};
+pub use e1003_unsafe_code::{E1003Config, E1003UnsafeCode};
+pub use e1004_unsafe_without_comment::{E1004Config, E1004UnsafeWithoutComment};
+pub use e1005_raw_pointer_deref::{E1005Config, E1005RawPointerDeref};
+pub use e1006_unsafe_transmute::{E1006Config, E1006UnsafeTransmute};
+pub use e1007_null_pointer_deref::{E1007Config, E1007NullPointerDeref};
+pub use e1008_unsafe_trait_impl::{E1008Config, E1008UnsafeTraitImpl};
+pub use e1009_unsafe_cell_misuse::{E1009Config, E1009UnsafeCellMisuse};
+pub use e1010_mutable_static_wo_sync::{E1010Config, E1010MutableStatic};
+pub use e1011_uninitialized_memory::{E1011Config, E1011UninitializedMemory};
+pub use e1012_unsafe_auto_trait::{E1012Config, E1012UnsafeAutoTrait};
+pub use e1013_union_field_access::{E1013Config, E1013UnionFieldAccess};
+pub use e1014_raw_pointer_arithmetic::{E1014Config, E1014RawPointerArithmetic};
+pub use e1015_unwrap_expect_wo_context::{E1015Config, E1015UnwrapExpect};
+pub use e1016_mutex_unwrap::{E1016Config, E1016MutexUnwrap};
+pub use e1017_todo_unimplemented::{E1017Config, E1017TodoUnimplemented};
+pub use e1018_prohibit_transmute::{E1018Config, E1018ProhibitTransmute};

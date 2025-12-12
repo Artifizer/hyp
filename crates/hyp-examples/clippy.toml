@@ -1,0 +1,7 @@
+# Clippy configuration for hyp-examples crate
+# These examples intentionally demonstrate problematic patterns,
+# so we allow the lints that would normally catch them.
+
+# Allow all clippy warnings for this crate since the examples
+# are meant to demonstrate problems
+allow-unwrap-in-tests = true
