@@ -1,24 +1,24 @@
-//! E1018: Prohibit std::mem::transmute unconditionally
+//! E1017: Prohibit std::mem::transmute unconditionally
 //!
 //! This checker takes a zero-tolerance approach by completely prohibiting ALL uses
 //! of std::mem::transmute, regardless of documentation or validation.
 //!
-//! Unlike E1006 which checks for missing size/alignment validation, E1018 bans
+//! Unlike E1006 which checks for missing size/alignment validation, E1017 bans
 //! transmute entirely as there are almost always safer alternatives.
 
 use crate::{checker::Checker, define_checker, violation::Violation};
 use syn::{spanned::Spanned, visit::Visit};
 
 define_checker! {
-    /// Checker for E1018: Prohibit std::mem::transmute unconditionally
-    E1018ProhibitTransmute,
-    code = "E1018",
+    /// Checker for E1017: Prohibit std::mem::transmute unconditionally
+    E1017ProhibitTransmute,
+    code = "E1017",
     name = "Prohibit std::mem::transmute",
     suggestions = "Use safe alternatives: f32::from_bits(), to_bits(), TryFrom::try_from(), or proper conversions",
     target_items = [Function, Impl],
-    config_entry_name = "e1018_prohibit_transmute",
-    /// Configuration for E1018: Prohibit transmute checker
-    config = E1018Config {
+    config_entry_name = "e1017_prohibit_transmute",
+    /// Configuration for E1017: Prohibit transmute checker
+    config = E1017Config {
         /// Whether this checker is enabled
         enabled: bool = true,
         /// Severity level (default: High)
@@ -42,23 +42,21 @@ define_checker! {
 struct TransmuteProhibitVisitor<'a> {
     violations: Vec<Violation>,
     file_path: &'a str,
-    checker: &'a E1018ProhibitTransmute,
+    checker: &'a E1017ProhibitTransmute,
 }
 
 impl<'a> TransmuteProhibitVisitor<'a> {
     fn is_transmute_call(&self, path: &syn::Path) -> bool {
         // Check for std::mem::transmute, core::mem::transmute, or just transmute
         if path.segments.len() >= 3 {
-            let segments: Vec<String> = path.segments.iter()
-                .map(|s| s.ident.to_string())
-                .collect();
+            let segments: Vec<String> = path.segments.iter().map(|s| s.ident.to_string()).collect();
 
             // Check for std::mem::transmute or core::mem::transmute
             if segments.len() >= 3 {
                 let n = segments.len();
-                if (segments[n-3] == "std" || segments[n-3] == "core")
-                    && segments[n-2] == "mem"
-                    && segments[n-1] == "transmute"
+                if (segments[n - 3] == "std" || segments[n - 3] == "core")
+                    && segments[n - 2] == "mem"
+                    && segments[n - 1] == "transmute"
                 {
                     return true;
                 }
@@ -112,7 +110,7 @@ mod tests {
     use super::*;
 
     fn check_code(code: &str) -> Vec<Violation> {
-        let checker = E1018ProhibitTransmute::default();
+        let checker = E1017ProhibitTransmute::default();
         let file = syn::parse_file(code).expect("Failed to parse");
         let mut violations = Vec::new();
         for item in &file.items {
@@ -131,7 +129,7 @@ mod tests {
         "#;
         let violations = check_code(code);
         assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].code, "E1018");
+        assert_eq!(violations[0].code, "E1017");
     }
 
     #[test]

@@ -17,4 +17,4 @@ pub mod e1013_union_field_access;
 pub mod e1014_raw_pointer_arithmetic;
 pub mod e1015_unwrap_expect_wo_context;
 pub mod e1016_mutex_unwrap;
-pub mod e1018_prohibit_transmute;
+pub mod e1017_prohibit_transmute;

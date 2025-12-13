@@ -16,7 +16,7 @@ pub mod e1013_union_field_access;
 pub mod e1014_raw_pointer_arithmetic;
 pub mod e1015_unwrap_expect_wo_context;
 pub mod e1016_mutex_unwrap;
-pub mod e1018_prohibit_transmute;
+pub mod e1017_prohibit_transmute;
 pub mod registry;
 
 pub use e1001_direct_panic::{E1001Config, E1001DirectPanic};
@@ -35,4 +35,4 @@ pub use e1013_union_field_access::{E1013Config, E1013UnionFieldAccess};
 pub use e1014_raw_pointer_arithmetic::{E1014Config, E1014RawPointerArithmetic};
 pub use e1015_unwrap_expect_wo_context::{E1015Config, E1015UnwrapExpect};
 pub use e1016_mutex_unwrap::{E1016Config, E1016MutexUnwrap};
-pub use e1018_prohibit_transmute::{E1018Config, E1018ProhibitTransmute};
+pub use e1017_prohibit_transmute::{E1017Config, E1017ProhibitTransmute};

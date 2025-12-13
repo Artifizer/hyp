@@ -8,9 +8,8 @@ use crate::{
         E1006Config, E1006UnsafeTransmute, E1007Config, E1007NullPointerDeref, E1008Config,
         E1008UnsafeTraitImpl, E1009Config, E1009UnsafeCellMisuse, E1010Config, E1010MutableStatic,
         E1011Config, E1011UninitializedMemory, E1012Config, E1012UnsafeAutoTrait, E1013Config,
-        E1013UnionFieldAccess, E1014Config, E1014RawPointerArithmetic, E1015Config, E1015UnwrapExpect,
-        E1016Config, E1016MutexUnwrap, E1018Config,
-        E1018ProhibitTransmute,
+        E1013UnionFieldAccess, E1014Config, E1014RawPointerArithmetic, E1015Config,
+        E1015UnwrapExpect, E1016Config, E1016MutexUnwrap, E1017Config, E1017ProhibitTransmute,
     },
     register_checker,
     registry::CheckerRegistration,
@@ -35,6 +34,6 @@ pub fn e10_registrations() -> Vec<CheckerRegistration> {
         register_checker!(E1014RawPointerArithmetic, E1014Config),
         register_checker!(E1015UnwrapExpect, E1015Config),
         register_checker!(E1016MutexUnwrap, E1016Config),
-        register_checker!(E1018ProhibitTransmute, E1018Config),
+        register_checker!(E1017ProhibitTransmute, E1017Config),
     ]
 }

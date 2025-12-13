@@ -21,7 +21,7 @@ use problem_examples::e10_unsafe_code::e1013_union_field_access::e1013_entry;
 use problem_examples::e10_unsafe_code::e1014_raw_pointer_arithmetic::e1014_entry;
 use problem_examples::e10_unsafe_code::e1015_unwrap_expect_wo_context::e1015_entry;
 use problem_examples::e10_unsafe_code::e1016_mutex_unwrap::e1016_entry;
-use problem_examples::e10_unsafe_code::e1018_prohibit_transmute::e1018_entry;
+use problem_examples::e10_unsafe_code::e1017_prohibit_transmute::e1017_entry;
 use problem_examples::e11_code_surface_complexity::e1101_high_cyclomatic_complexity::e1101_entry;
 use problem_examples::e11_code_surface_complexity::e1102_deep_nested_logic_in_loops::e1102_entry;
 use problem_examples::e11_code_surface_complexity::e1103_too_many_params::e1103_entry;
@@ -214,7 +214,7 @@ fn show_category(category: &str) {
             println!("E1014 - Raw pointer arithmetic (offset/add/sub) without bounds");
             println!("E1015 - Unwrap/expect with poor or missing context message");
             println!("E1016 - Mutex lock().unwrap() - causes panic cascades on poisoning");
-            println!("E1018 - Prohibit std::mem::transmute unconditionally");
+            println!("E1017 - Prohibit std::mem::transmute unconditionally");
         }
         "e11" => {
             println!("E11* - Code Surface Complexity Problems\n");
@@ -373,7 +373,7 @@ fn run_problem(problem: &str) {
             "E1014" => Some(e1014_entry()),
             "E1015" => Some(e1015_entry()),
             "E1016" => Some(e1016_entry()),
-            "E1018" => Some(e1018_entry()),
+            "E1017" => Some(e1017_entry()),
 
             // E11: Code Surface Complexity
             "E1101" => Some(e1101_entry()),
@@ -507,7 +507,7 @@ fn run_problem(problem: &str) {
         None => {
             eprintln!("\n✗ Unknown problem code: {}", problem);
             eprintln!("\nAvailable problems:");
-            eprintln!("  E10* - Unsafe Code: e1001-e1018");
+            eprintln!("  E10* - Unsafe Code: e1001-e1017");
             eprintln!("  E11* - Code Complexity: e1101-e1112");
             eprintln!("  E12* - Pattern Complexity: e1201-e1217");
             eprintln!("  E13* - Error Handling: e1301-e1310");
@@ -543,7 +543,7 @@ macro_rules! define_problems {
             ("E1014", "Raw pointer arithmetic", e1014_entry),
             ("E1015", "Unwrap/expect without context", e1015_entry),
             ("E1016", "Mutex unwrap poisoning", e1016_entry),
-            ("E1018", "Prohibit transmute", e1018_entry),
+            ("E1017", "Prohibit transmute", e1017_entry),
 
             // E11: Code Surface Complexity
             ("E1101", "High cyclomatic complexity", e1101_entry),
