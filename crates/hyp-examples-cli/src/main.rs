@@ -8,6 +8,7 @@ use clap::{Parser, Subcommand};
 use problem_examples::e10_unsafe_code::e1001_direct_panic::e1001_entry;
 use problem_examples::e10_unsafe_code::e1002_direct_unwrap_expect::e1002_entry;
 use problem_examples::e10_unsafe_code::e1003_unsafe_code::e1003_entry;
+use problem_examples::e10_unsafe_code::e1004_todo_unimplemented::e1004_entry;
 use problem_examples::e10_unsafe_code::e1005_raw_pointer_deref::e1005_entry;
 use problem_examples::e10_unsafe_code::e1006_unsafe_transmute::e1006_entry;
 use problem_examples::e10_unsafe_code::e1007_null_pointer_deref::e1007_entry;
@@ -20,7 +21,6 @@ use problem_examples::e10_unsafe_code::e1013_union_field_access::e1013_entry;
 use problem_examples::e10_unsafe_code::e1014_raw_pointer_arithmetic::e1014_entry;
 use problem_examples::e10_unsafe_code::e1015_unwrap_expect_wo_context::e1015_entry;
 use problem_examples::e10_unsafe_code::e1016_mutex_unwrap::e1016_entry;
-use problem_examples::e10_unsafe_code::e1017_todo_unimplemented::e1017_entry;
 use problem_examples::e10_unsafe_code::e1018_prohibit_transmute::e1018_entry;
 use problem_examples::e11_code_surface_complexity::e1101_high_cyclomatic_complexity::e1101_entry;
 use problem_examples::e11_code_surface_complexity::e1102_deep_nested_logic_in_loops::e1102_entry;
@@ -201,6 +201,7 @@ fn show_category(category: &str) {
             println!("E1001 - Direct call of panic!() - crashes instead of returning errors");
             println!("E1002 - Direct use of unwrap()/expect() - crashes program on None/Err");
             println!("E1003 - Direct use of unsafe blocks/functions");
+            println!("E1004 - todo!/unimplemented! macros in code - panics at runtime");
             println!("E1005 - Dereferencing raw pointers without null/alignment checks");
             println!("E1006 - Transmute without verifying size/alignment compatibility");
             println!("E1007 - Potential null pointer dereference");
@@ -213,7 +214,6 @@ fn show_category(category: &str) {
             println!("E1014 - Raw pointer arithmetic (offset/add/sub) without bounds");
             println!("E1015 - Unwrap/expect with poor or missing context message");
             println!("E1016 - Mutex lock().unwrap() - causes panic cascades on poisoning");
-            println!("E1017 - todo!/unimplemented! macros in code - panics at runtime");
             println!("E1018 - Prohibit std::mem::transmute unconditionally");
         }
         "e11" => {
@@ -360,6 +360,7 @@ fn run_problem(problem: &str) {
             "E1001" => Some(e1001_entry()),
             "E1002" => Some(e1002_entry()),
             "E1003" => Some(e1003_entry()),
+            "E1004" => Some(e1004_entry()),
             "E1005" => Some(e1005_entry()),
             "E1006" => Some(e1006_entry()),
             "E1007" => Some(e1007_entry()),
@@ -372,7 +373,6 @@ fn run_problem(problem: &str) {
             "E1014" => Some(e1014_entry()),
             "E1015" => Some(e1015_entry()),
             "E1016" => Some(e1016_entry()),
-            "E1017" => Some(e1017_entry()),
             "E1018" => Some(e1018_entry()),
 
             // E11: Code Surface Complexity
@@ -530,6 +530,7 @@ macro_rules! define_problems {
             ("E1001", "Direct panic", e1001_entry),
             ("E1002", "Direct unwrap/expect crashes", e1002_entry),
             ("E1003", "Unsafe code", e1003_entry),
+            ("E1004", "todo!/unimplemented! in code", e1004_entry),
             ("E1005", "Raw pointer deref", e1005_entry),
             ("E1006", "Unsafe transmute", e1006_entry),
             ("E1007", "Null pointer deref", e1007_entry),
@@ -542,7 +543,6 @@ macro_rules! define_problems {
             ("E1014", "Raw pointer arithmetic", e1014_entry),
             ("E1015", "Unwrap/expect without context", e1015_entry),
             ("E1016", "Mutex unwrap poisoning", e1016_entry),
-            ("E1017", "todo!/unimplemented! in code", e1017_entry),
             ("E1018", "Prohibit transmute", e1018_entry),
 
             // E11: Code Surface Complexity

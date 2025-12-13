@@ -102,9 +102,9 @@ pub fn process_user_input(data: Option<String>) -> String {
     data.unwrap()  // Clippy won't warn - but this WILL panic in production!
     // Team policy: "Never use unwrap on user input" - but Clippy can't enforce it
 }
-
-// See hyp-examples/ for 100+ more patterns Hyp detects
 ```
+
+See also [HYP_VS_CLIPPY.md](HYP_VS_CLIPPY.md) and [hyp-examples](hyp-examples/)
 
 ## Quick start
 
@@ -155,7 +155,7 @@ similar to PEP8 or Clippy lints, e.g.:
 
 - `E1001` – Direct call of `panic!`
 - `E1002` – Direct call of `unwrap` / `expect`
-- `E1017` – `todo!()` / `unimplemented!()` in production code
+- `E1004` – `todo!()` / `unimplemented!()` in production code
 - `E1106` – Long function (too many lines)
 - `E1112` – Hardcoded magic numbers
 - `E1401` – Integer overflow/underflow
@@ -328,18 +328,20 @@ categories = ["compliance"]
 
 # Define multiple rules
 [[checkers.e1901_allowed_names.rules]]
+enabled = true
 item_types = ["struct"]
 reference_type = "define"
-name_patterns = [".*DTO$"]  # Matches any struct ending with "DTO"
+name_patterns = [".*DTO$", ".*Dto$"]  # Matches any struct ending with "DTO"
 allowed_paths = ["^.*/api/.*\\.rs$"]  # Only in api/ directory
-message = "DTO struct '{name}' in {path} must be in api/ directory"
+message = "DTO struct '{name}' can not be defined outside {path}"
 
 [[checkers.e1901_allowed_names.rules]]
+enabled = true
 item_types = ["use"]
-reference_type = "refer"
-name_patterns = ["^sqlx::.*\\*$"]  # Matches sqlx::* wildcard imports
-allowed_paths = ["^(?!.*/api/).*$"]  # NOT in api/ directory
-message = "Wildcard import '{name}' not allowed in api/ - use explicit imports"
+reference_type = "use"
+name_patterns = ["^sqlx::.*$"]  # Matches sqlx::* wildcard imports
+allowed_paths = ["^.*/api/.*$"]  # NOT in api/ directory
+message = "SQLx can not be imported and used in {path}"
 ```
 
 **Fields:**
@@ -368,15 +370,17 @@ categories = ["compliance"]
 
 # Block Clippy allows everywhere - force Clippy.toml usage
 [[checkers.e1902_inline_directives.rules]]
+enabled = true
 directive_patterns = ["allow\\(clippy::.*\\)"]
 allowed_paths = ["^$"]  # Empty = nowhere allowed
-message = "Clippy bypass '{directive}' in {path} - use Clippy.toml for project-wide config"
+message = "Inline clippy '{directive}' is not alowed in {path} - use Clippy.toml for project-wide config"
 
 # Allow warning suppression only in tests
 [[checkers.e1902_inline_directives.rules]]
+enabled = true
 directive_patterns = ["allow\\(warnings\\)", "allow\\(dead_code\\)"]
 allowed_paths = ["^.*/tests/.*\\.rs$", "^.*_test\\.rs$"]
-message = "Warning suppression '{directive}' in {path} - only allowed in tests"
+message = "Warning suppression '{directive}' in '{path}' is not allowed - only allowed in tests"
 ```
 
 **Fields:**
@@ -406,12 +410,12 @@ categories = ["compliance"]
 [[checkers.e1903_file_location.rules]]
 filename_pattern = "^Clippy\\.toml$"
 allowed_paths = ["^[^/]+/Clippy\\.toml$"]
-message = "Clippy.toml in {path} must be at project root"
+message = "Clippy.toml in {path} must be at project root only"
 
 [[checkers.e1903_file_location.rules]]
 filename_pattern = "^rustfmt\\.toml$"
 allowed_paths = ["^[^/]+/rustfmt\\.toml$"]
-message = "rustfmt.toml in {path} must be at project root"
+message = "rustfmt.toml in {path} must be at project root only"
 
 # Proto files must be in proto/ directory
 [[checkers.e1903_file_location.rules]]
@@ -501,7 +505,7 @@ This workspace contains 4 crates:
 // E1015: unwrap without context - confuses LLMs about error handling
 let value = data.unwrap();  // ❌ What could go wrong here?
 
-// E1017: todo!/unimplemented! in production - LLMs often leave these behind
+// E1004: todo!/unimplemented! in production - LLMs often leave these behind
 todo!("implement this later");  // ❌ Will panic at runtime!
 
 // E1101: high cyclomatic complexity - too many paths to reason about

@@ -3,6 +3,7 @@
 pub mod e1001_direct_panic;
 pub mod e1002_direct_unwrap_expect;
 pub mod e1003_unsafe_code;
+pub mod e1004_todo_unimplemented;
 pub mod e1005_raw_pointer_deref;
 pub mod e1006_unsafe_transmute;
 pub mod e1007_null_pointer_deref;
@@ -15,13 +16,13 @@ pub mod e1013_union_field_access;
 pub mod e1014_raw_pointer_arithmetic;
 pub mod e1015_unwrap_expect_wo_context;
 pub mod e1016_mutex_unwrap;
-pub mod e1017_todo_unimplemented;
 pub mod e1018_prohibit_transmute;
 pub mod registry;
 
 pub use e1001_direct_panic::{E1001Config, E1001DirectPanic};
 pub use e1002_direct_unwrap_expect::{E1002Config, E1002DirectUnwrapExpect};
 pub use e1003_unsafe_code::{E1003Config, E1003UnsafeCode};
+pub use e1004_todo_unimplemented::{E1004Config, E1004TodoUnimplemented};
 pub use e1005_raw_pointer_deref::{E1005Config, E1005RawPointerDeref};
 pub use e1006_unsafe_transmute::{E1006Config, E1006UnsafeTransmute};
 pub use e1007_null_pointer_deref::{E1007Config, E1007NullPointerDeref};
@@ -34,5 +35,4 @@ pub use e1013_union_field_access::{E1013Config, E1013UnionFieldAccess};
 pub use e1014_raw_pointer_arithmetic::{E1014Config, E1014RawPointerArithmetic};
 pub use e1015_unwrap_expect_wo_context::{E1015Config, E1015UnwrapExpect};
 pub use e1016_mutex_unwrap::{E1016Config, E1016MutexUnwrap};
-pub use e1017_todo_unimplemented::{E1017Config, E1017TodoUnimplemented};
 pub use e1018_prohibit_transmute::{E1018Config, E1018ProhibitTransmute};

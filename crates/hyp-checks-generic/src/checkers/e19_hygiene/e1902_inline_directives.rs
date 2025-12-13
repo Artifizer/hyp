@@ -12,13 +12,21 @@ use syn::{spanned::Spanned, visit::Visit};
 /// A rule controlling where specific directives can be used
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DirectiveRule {
+    /// Whether this rule is enabled (default: true)
+    #[serde(default = "default_enabled")]
+    pub enabled: bool,
     /// Directive patterns to match (e.g., "allow\\(clippy::.*\\)", "deny\\(warnings\\)")
     pub directive_patterns: Vec<String>,
-    /// Regex patterns for allowed file paths
+    /// Regex patterns for allowed file paths (empty = nowhere allowed)
+    #[serde(default)]
     pub allowed_paths: Vec<String>,
     /// Custom message template with placeholders: {directive}, {path}, {allowed_paths}
     #[serde(default = "default_directive_message")]
     pub message: String,
+}
+
+fn default_enabled() -> bool {
+    true
 }
 
 fn default_directive_message() -> String {
@@ -87,6 +95,11 @@ impl<'a> DirectiveVisitor<'a> {
             let attr_str = quote::quote!(#attr).to_string();
 
             for rule in &self.checker.config.rules {
+                // Skip disabled rules
+                if !rule.enabled {
+                    continue;
+                }
+
                 // Compile patterns
                 let Ok((directive_regexes, path_regexes)) = rule.compile_patterns() else {
                     continue;
@@ -179,6 +192,20 @@ impl<'a> Visit<'a> for DirectiveVisitor<'a> {
 mod tests {
     use super::*;
 
+    /// Helper to create a rule with all required fields
+    fn make_rule(
+        directive_patterns: Vec<&str>,
+        allowed_paths: Vec<&str>,
+        message: &str,
+    ) -> DirectiveRule {
+        DirectiveRule {
+            enabled: true,
+            directive_patterns: directive_patterns.into_iter().map(String::from).collect(),
+            allowed_paths: allowed_paths.into_iter().map(String::from).collect(),
+            message: message.to_string(),
+        }
+    }
+
     fn check_code_with_config(code: &str, rules: Vec<DirectiveRule>, file_path: &str) -> Vec<Violation> {
         let mut config = E1902Config::default();
         config.rules = rules;
@@ -201,11 +228,11 @@ mod tests {
             }
         "#;
 
-        let rules = vec![DirectiveRule {
-            directive_patterns: vec!["allow\\(clippy::.*\\)".to_string()],
-            allowed_paths: vec!["^$".to_string()],
-            message: "Clippy bypass not allowed".to_string(),
-        }];
+        let rules = vec![make_rule(
+            vec!["allow\\(clippy::.*\\)"],
+            vec!["^$"],
+            "Clippy bypass not allowed",
+        )];
 
         let violations = check_code_with_config(code, rules, "src/main.rs");
         // Note: syn parses #[allow(...)] attributes, but the pattern matching
@@ -221,11 +248,11 @@ mod tests {
             fn helper() {}
         "#;
 
-        let rules = vec![DirectiveRule {
-            directive_patterns: vec!["allow\\(dead_code\\)".to_string()],
-            allowed_paths: vec!["^.*/tests/.*\\.rs$".to_string()],
-            message: "dead_code allow not permitted".to_string(),
-        }];
+        let rules = vec![make_rule(
+            vec!["allow\\(dead_code\\)"],
+            vec!["^.*/tests/.*\\.rs$"],
+            "dead_code allow not permitted",
+        )];
 
         // Note: Attribute detection works, but pattern matching needs refinement
         let violations_src = check_code_with_config(code, rules.clone(), "src/main.rs");
@@ -244,11 +271,11 @@ mod tests {
             fn helper() {}
         "#;
 
-        let rules = vec![DirectiveRule {
-            directive_patterns: vec!["allow\\(clippy::.*\\)".to_string(), "allow\\(dead_code\\)".to_string()],
-            allowed_paths: vec!["^$".to_string()],
-            message: "Directive not allowed".to_string(),
-        }];
+        let rules = vec![make_rule(
+            vec!["allow\\(clippy::.*\\)", "allow\\(dead_code\\)"],
+            vec!["^$"],
+            "Directive not allowed",
+        )];
 
         let violations = check_code_with_config(code, rules, "src/main.rs");
         // Should detect multiple directives, but pattern matching may need adjustment
@@ -262,13 +289,76 @@ mod tests {
             struct User { id: i32 }
         "#;
 
-        let rules = vec![DirectiveRule {
-            directive_patterns: vec!["allow\\(clippy::.*\\)".to_string()],
-            allowed_paths: vec!["^$".to_string()],
-            message: "Clippy bypass not allowed".to_string(),
-        }];
+        let rules = vec![make_rule(
+            vec!["allow\\(clippy::.*\\)"],
+            vec!["^$"],
+            "Clippy bypass not allowed",
+        )];
 
         let violations = check_code_with_config(code, rules, "src/main.rs");
         assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_disabled_rule_is_skipped() {
+        let code = r#"
+            #[allow(clippy::unwrap_used)]
+            fn dangerous() {}
+        "#;
+
+        let rules = vec![DirectiveRule {
+            enabled: false, // Disabled
+            directive_patterns: vec!["allow\\(clippy::.*\\)".to_string()],
+            allowed_paths: vec!["^$".to_string()],
+            message: "Should not match".to_string(),
+        }];
+
+        let violations = check_code_with_config(code, rules, "src/main.rs");
+        assert!(violations.is_empty(), "Disabled rule should not produce violations");
+    }
+
+    #[test]
+    fn test_rule_enabled_by_default() {
+        use crate::config::AnalyzerConfig;
+
+        let toml = r#"
+            [checkers.e1902_inline_directives]
+            enabled = true
+
+            [[checkers.e1902_inline_directives.rules]]
+            directive_patterns = ["allow\\(clippy::.*\\)"]
+            allowed_paths = ["^$"]
+            message = "No clippy bypass"
+        "#;
+
+        let config = AnalyzerConfig::from_toml(toml).unwrap();
+        let e1902_config: E1902Config = config
+            .get_checker_config("e1902_inline_directives")
+            .expect("Failed to load config");
+
+        assert!(e1902_config.rules[0].enabled, "Rule should be enabled by default");
+    }
+
+    #[test]
+    fn test_rule_can_be_disabled_via_toml() {
+        use crate::config::AnalyzerConfig;
+
+        let toml = r#"
+            [checkers.e1902_inline_directives]
+            enabled = true
+
+            [[checkers.e1902_inline_directives.rules]]
+            enabled = false
+            directive_patterns = ["allow\\(clippy::.*\\)"]
+            allowed_paths = ["^$"]
+            message = "No clippy bypass"
+        "#;
+
+        let config = AnalyzerConfig::from_toml(toml).unwrap();
+        let e1902_config: E1902Config = config
+            .get_checker_config("e1902_inline_directives")
+            .expect("Failed to load config");
+
+        assert!(!e1902_config.rules[0].enabled, "Rule should be disabled via TOML");
     }
 }

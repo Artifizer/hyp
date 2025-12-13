@@ -1,4 +1,4 @@
-//! E1017: `todo!()` and `unimplemented!()` macros in production code
+//! E1004: `todo!()` and `unimplemented!()` macros in production code
 //!
 //! Detects `todo!()` and `unimplemented!()` macros which panic at runtime.
 //! These are placeholder macros that should be replaced with actual implementations
@@ -11,14 +11,14 @@ use crate::{checker::Checker, define_checker, violation::Violation};
 use syn::{spanned::Spanned, visit::Visit, Macro};
 
 define_checker! {
-    /// Checker for E1017: todo!/unimplemented! in production code
-    E1017TodoUnimplemented,
-    code = "E1017",
+    /// Checker for E1004: todo!/unimplemented! in production code
+    E1004TodoUnimplemented,
+    code = "E1004",
     name = "todo!/unimplemented! macro in code",
     suggestions = "Replace with actual implementation or return Result/Option for incomplete features",
     target_items = [Function],
-    config_entry_name = "e1017_todo_unimplemented",
-    config = E1017Config {
+    config_entry_name = "e1004_todo_unimplemented",
+    config = E1004Config {
         enabled: bool = true,
         severity: crate::config::SeverityLevel = crate::config::SeverityLevel::High,
         categories: Vec<crate::config::CheckerCategory> = vec![crate::config::CheckerCategory::Operations],
@@ -39,7 +39,7 @@ define_checker! {
 struct TodoVisitor<'a> {
     violations: Vec<Violation>,
     file_path: &'a str,
-    checker: &'a E1017TodoUnimplemented,
+    checker: &'a E1004TodoUnimplemented,
 }
 
 impl<'a> TodoVisitor<'a> {
@@ -108,7 +108,7 @@ mod tests {
     use crate::checker::Checker;
 
     fn check_code(code: &str) -> Vec<Violation> {
-        let checker = E1017TodoUnimplemented::default();
+        let checker = E1004TodoUnimplemented::default();
         let file = syn::parse_file(code).expect("Failed to parse");
         let mut violations = Vec::new();
         for item in &file.items {

@@ -4,6 +4,7 @@
 pub mod e1001_direct_panic;
 pub mod e1002_direct_unwrap_expect;
 pub mod e1003_unsafe_code;
+pub mod e1004_todo_unimplemented;
 pub mod e1005_raw_pointer_deref;
 pub mod e1006_unsafe_transmute;
 pub mod e1007_null_pointer_deref;
@@ -16,5 +17,4 @@ pub mod e1013_union_field_access;
 pub mod e1014_raw_pointer_arithmetic;
 pub mod e1015_unwrap_expect_wo_context;
 pub mod e1016_mutex_unwrap;
-pub mod e1017_todo_unimplemented;
 pub mod e1018_prohibit_transmute;

@@ -12,13 +12,21 @@ use std::path::Path;
 /// A rule controlling where specific files can exist
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileLocationRule {
+    /// Whether this rule is enabled (default: true)
+    #[serde(default = "default_enabled")]
+    pub enabled: bool,
     /// Regex pattern for filename (e.g., "Cargo\\.toml", ".*\\.proto$")
     pub filename_pattern: String,
-    /// Regex patterns for allowed file paths
+    /// Regex patterns for allowed file paths (empty = nowhere allowed)
+    #[serde(default)]
     pub allowed_paths: Vec<String>,
     /// Custom message template with placeholders: {filename}, {path}, {allowed_paths}
     #[serde(default = "default_file_message")]
     pub message: String,
+}
+
+fn default_enabled() -> bool {
+    true
 }
 
 fn default_file_message() -> String {
@@ -74,6 +82,11 @@ define_checker! {
         let mut violations = Vec::new();
 
         for rule in &self.config.rules {
+            // Skip disabled rules
+            if !rule.enabled {
+                continue;
+            }
+
             // Compile patterns
             let Ok((filename_regex, path_regexes)) = rule.compile_patterns() else {
                 continue;
@@ -120,6 +133,20 @@ mod tests {
     use super::*;
     use crate::checker::Checker;
 
+    /// Helper to create a rule with all required fields
+    fn make_rule(
+        filename_pattern: &str,
+        allowed_paths: Vec<&str>,
+        message: &str,
+    ) -> FileLocationRule {
+        FileLocationRule {
+            enabled: true,
+            filename_pattern: filename_pattern.to_string(),
+            allowed_paths: allowed_paths.into_iter().map(String::from).collect(),
+            message: message.to_string(),
+        }
+    }
+
     fn check_file_with_config(rules: Vec<FileLocationRule>, file_path: &str) -> Vec<Violation> {
         let mut config = E1903Config::default();
         config.rules = rules;
@@ -136,11 +163,11 @@ mod tests {
 
     #[test]
     fn test_clippy_toml_in_wrong_location() {
-        let rules = vec![FileLocationRule {
-            filename_pattern: "^Clippy\\.toml$".to_string(),
-            allowed_paths: vec!["^[^/]+/Clippy\\.toml$".to_string()],
-            message: "Clippy.toml must be at root".to_string(),
-        }];
+        let rules = vec![make_rule(
+            "^Clippy\\.toml$",
+            vec!["^[^/]+/Clippy\\.toml$"],
+            "Clippy.toml must be at root",
+        )];
 
         let violations = check_file_with_config(rules, "src/config/Clippy.toml");
         assert_eq!(violations.len(), 1);
@@ -149,11 +176,11 @@ mod tests {
 
     #[test]
     fn test_clippy_toml_in_correct_location() {
-        let rules = vec![FileLocationRule {
-            filename_pattern: "^Clippy\\.toml$".to_string(),
-            allowed_paths: vec!["^[^/]+/Clippy\\.toml$".to_string()],
-            message: "Clippy.toml must be at root".to_string(),
-        }];
+        let rules = vec![make_rule(
+            "^Clippy\\.toml$",
+            vec!["^[^/]+/Clippy\\.toml$"],
+            "Clippy.toml must be at root",
+        )];
 
         let violations = check_file_with_config(rules, "myproject/Clippy.toml");
         assert!(violations.is_empty());
@@ -161,11 +188,11 @@ mod tests {
 
     #[test]
     fn test_proto_file_in_wrong_location() {
-        let rules = vec![FileLocationRule {
-            filename_pattern: ".*\\.proto$".to_string(),
-            allowed_paths: vec!["^.*/proto/.*\\.proto$".to_string()],
-            message: "Proto files must be in proto/ directory".to_string(),
-        }];
+        let rules = vec![make_rule(
+            ".*\\.proto$",
+            vec!["^.*/proto/.*\\.proto$"],
+            "Proto files must be in proto/ directory",
+        )];
 
         let violations = check_file_with_config(rules, "src/api/user.proto");
         assert_eq!(violations.len(), 1);
@@ -173,11 +200,11 @@ mod tests {
 
     #[test]
     fn test_proto_file_in_correct_location() {
-        let rules = vec![FileLocationRule {
-            filename_pattern: ".*\\.proto$".to_string(),
-            allowed_paths: vec!["^.*/proto/.*\\.proto$".to_string()],
-            message: "Proto files must be in proto/ directory".to_string(),
-        }];
+        let rules = vec![make_rule(
+            ".*\\.proto$",
+            vec!["^.*/proto/.*\\.proto$"],
+            "Proto files must be in proto/ directory",
+        )];
 
         let violations = check_file_with_config(rules, "src/proto/user.proto");
         assert!(violations.is_empty());
@@ -185,11 +212,11 @@ mod tests {
 
     #[test]
     fn test_non_matching_filename_ignored() {
-        let rules = vec![FileLocationRule {
-            filename_pattern: "^Clippy\\.toml$".to_string(),
-            allowed_paths: vec!["^[^/]+/Clippy\\.toml$".to_string()],
-            message: "Clippy.toml must be at root".to_string(),
-        }];
+        let rules = vec![make_rule(
+            "^Clippy\\.toml$",
+            vec!["^[^/]+/Clippy\\.toml$"],
+            "Clippy.toml must be at root",
+        )];
 
         let violations = check_file_with_config(rules, "src/config/settings.toml");
         assert!(violations.is_empty());
@@ -197,14 +224,11 @@ mod tests {
 
     #[test]
     fn test_multiple_allowed_paths() {
-        let rules = vec![FileLocationRule {
-            filename_pattern: "^config\\.toml$".to_string(),
-            allowed_paths: vec![
-                "^.*/config/config\\.toml$".to_string(),
-                "^.*/settings/config\\.toml$".to_string(),
-            ],
-            message: "config.toml in wrong location".to_string(),
-        }];
+        let rules = vec![make_rule(
+            "^config\\.toml$",
+            vec!["^.*/config/config\\.toml$", "^.*/settings/config\\.toml$"],
+            "config.toml in wrong location",
+        )];
 
         // Should be blocked in src/
         let violations = check_file_with_config(rules.clone(), "src/config.toml");
@@ -217,5 +241,63 @@ mod tests {
         // Should be allowed in settings/
         let violations = check_file_with_config(rules, "src/settings/config.toml");
         assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_disabled_rule_is_skipped() {
+        let rules = vec![FileLocationRule {
+            enabled: false, // Disabled
+            filename_pattern: "^Clippy\\.toml$".to_string(),
+            allowed_paths: vec!["^[^/]+/Clippy\\.toml$".to_string()],
+            message: "Should not match".to_string(),
+        }];
+
+        let violations = check_file_with_config(rules, "src/config/Clippy.toml");
+        assert!(violations.is_empty(), "Disabled rule should not produce violations");
+    }
+
+    #[test]
+    fn test_rule_enabled_by_default() {
+        use crate::config::AnalyzerConfig;
+
+        let toml = r#"
+            [checkers.e1903_file_location]
+            enabled = true
+
+            [[checkers.e1903_file_location.rules]]
+            filename_pattern = "^Clippy\\.toml$"
+            allowed_paths = ["^[^/]+/Clippy\\.toml$"]
+            message = "Clippy.toml must be at root"
+        "#;
+
+        let config = AnalyzerConfig::from_toml(toml).unwrap();
+        let e1903_config: E1903Config = config
+            .get_checker_config("e1903_file_location")
+            .expect("Failed to load config");
+
+        assert!(e1903_config.rules[0].enabled, "Rule should be enabled by default");
+    }
+
+    #[test]
+    fn test_rule_can_be_disabled_via_toml() {
+        use crate::config::AnalyzerConfig;
+
+        let toml = r#"
+            [checkers.e1903_file_location]
+            enabled = true
+
+            [[checkers.e1903_file_location.rules]]
+            enabled = false
+            filename_pattern = "^Clippy\\.toml$"
+            allowed_paths = ["^[^/]+/Clippy\\.toml$"]
+            message = "Clippy.toml must be at root"
+        "#;
+
+        let config = AnalyzerConfig::from_toml(toml).unwrap();
+        let e1903_config: E1903Config = config
+            .get_checker_config("e1903_file_location")
+            .expect("Failed to load config");
+
+        assert!(!e1903_config.rules[0].enabled, "Rule should be disabled via TOML");
     }
 }
