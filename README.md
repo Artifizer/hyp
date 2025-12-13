@@ -1,4 +1,5 @@
-> Version: 0.1, early preview
+> THIS IS EXPERIMENTAL AND NOT READY FOR PRODUCTION USE
+> Version: 0.1, early preview.
 
 # Hyp - Rust Code Quality Analyzer
 
