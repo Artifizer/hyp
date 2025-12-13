@@ -8,6 +8,7 @@ pub mod e1607_forget_drop;
 pub mod e1609_invalid_slice;
 pub mod e1610_unaligned_deref;
 pub mod e1611_consuming_self;
+pub mod e1612_prohibit_custom_allocators;
 pub mod registry;
 
 pub use e1603_dangling_reference::{E1603Config, E1603DanglingReference};
@@ -18,3 +19,4 @@ pub use e1607_forget_drop::{E1607Config, E1607ForgetDrop};
 pub use e1609_invalid_slice::{E1609Config, E1609InvalidSlice};
 pub use e1610_unaligned_deref::{E1610Config, E1610UnalignedDeref};
 pub use e1611_consuming_self::{E1611Config, E1611ConsumingSelf};
+pub use e1612_prohibit_custom_allocators::{E1612Config, E1612ProhibitCustomAllocators};

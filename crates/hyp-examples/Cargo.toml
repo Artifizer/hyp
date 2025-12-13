@@ -26,7 +26,11 @@ log = "0.4"
 parking_lot = "0.12"
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(kani)',
+    'cfg(coverage_nightly)',
+    'cfg(custom_coverage)',
+] }
 
 [features]
 parking_lot = []

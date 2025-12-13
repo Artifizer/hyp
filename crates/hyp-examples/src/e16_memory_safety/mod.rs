@@ -11,3 +11,4 @@ pub mod e1608_double_free;
 pub mod e1609_invalid_slice;
 pub mod e1610_unaligned_deref;
 pub mod e1611_consuming_self;
+pub mod e1612_prohibit_custom_allocators;

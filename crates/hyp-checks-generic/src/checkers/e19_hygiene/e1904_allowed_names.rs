@@ -1,4 +1,4 @@
-//! E1901: Allowed names and paths control
+//! E1904: Allowed names and paths control
 //!
 //! Enforces project-specific naming and location rules for AST items.
 //! Prevents unwanted patterns like DTOs outside API layers or wildcard imports in specific modules.
@@ -190,14 +190,14 @@ impl NamingRule {
 }
 
 define_checker! {
-    /// Checker for E1901: Allowed names and paths control
-    E1901AllowedNames,
-    code = "E1901",
+    /// Checker for E1904: Allowed names and paths control
+    E1904AllowedNames,
+    code = "E1904",
     name = "Item name/location violates project rules",
     suggestions = "Move the item to an allowed location or rename it according to project conventions",
     target_items = [Struct, Enum, Trait, Function, Const, Static, Type, Use, Module, Impl],
-    config_entry_name = "e1901_allowed_names",
-    config = E1901Config {
+    config_entry_name = "e1904_allowed_names",
+    config = E1904Config {
         enabled: bool = true,
         severity: crate::config::SeverityLevel = crate::config::SeverityLevel::High,
         categories: Vec<crate::config::CheckerCategory> = vec![crate::config::CheckerCategory::Compliance],
@@ -218,7 +218,7 @@ define_checker! {
 struct NamingVisitor<'a> {
     violations: Vec<Violation>,
     file_path: &'a str,
-    checker: &'a E1901AllowedNames,
+    checker: &'a E1904AllowedNames,
 }
 
 impl<'a> NamingVisitor<'a> {
@@ -241,10 +241,7 @@ impl<'a> NamingVisitor<'a> {
             }
 
             // Check if this rule applies to this item type (supports wildcard "*")
-            let type_matches = rule
-                .item_types
-                .iter()
-                .any(|t| t.matches(&item_type));
+            let type_matches = rule.item_types.iter().any(|t| t.matches(&item_type));
             if !type_matches {
                 continue;
             }
@@ -303,49 +300,89 @@ impl<'a> NamingVisitor<'a> {
 impl<'a> Visit<'a> for NamingVisitor<'a> {
     fn visit_item_struct(&mut self, node: &'a syn::ItemStruct) {
         let name = node.ident.to_string();
-        self.check_rules(AstItemType::Struct, ReferenceType::Define, &name, node.ident.span());
+        self.check_rules(
+            AstItemType::Struct,
+            ReferenceType::Define,
+            &name,
+            node.ident.span(),
+        );
         syn::visit::visit_item_struct(self, node);
     }
 
     fn visit_item_enum(&mut self, node: &'a syn::ItemEnum) {
         let name = node.ident.to_string();
-        self.check_rules(AstItemType::Enum, ReferenceType::Define, &name, node.ident.span());
+        self.check_rules(
+            AstItemType::Enum,
+            ReferenceType::Define,
+            &name,
+            node.ident.span(),
+        );
         syn::visit::visit_item_enum(self, node);
     }
 
     fn visit_item_trait(&mut self, node: &'a syn::ItemTrait) {
         let name = node.ident.to_string();
-        self.check_rules(AstItemType::Trait, ReferenceType::Define, &name, node.ident.span());
+        self.check_rules(
+            AstItemType::Trait,
+            ReferenceType::Define,
+            &name,
+            node.ident.span(),
+        );
         syn::visit::visit_item_trait(self, node);
     }
 
     fn visit_item_fn(&mut self, node: &'a syn::ItemFn) {
         let name = node.sig.ident.to_string();
-        self.check_rules(AstItemType::Function, ReferenceType::Define, &name, node.sig.ident.span());
+        self.check_rules(
+            AstItemType::Function,
+            ReferenceType::Define,
+            &name,
+            node.sig.ident.span(),
+        );
         syn::visit::visit_item_fn(self, node);
     }
 
     fn visit_item_type(&mut self, node: &'a syn::ItemType) {
         let name = node.ident.to_string();
-        self.check_rules(AstItemType::Type, ReferenceType::Define, &name, node.ident.span());
+        self.check_rules(
+            AstItemType::Type,
+            ReferenceType::Define,
+            &name,
+            node.ident.span(),
+        );
         syn::visit::visit_item_type(self, node);
     }
 
     fn visit_item_const(&mut self, node: &'a syn::ItemConst) {
         let name = node.ident.to_string();
-        self.check_rules(AstItemType::Const, ReferenceType::Define, &name, node.ident.span());
+        self.check_rules(
+            AstItemType::Const,
+            ReferenceType::Define,
+            &name,
+            node.ident.span(),
+        );
         syn::visit::visit_item_const(self, node);
     }
 
     fn visit_item_static(&mut self, node: &'a syn::ItemStatic) {
         let name = node.ident.to_string();
-        self.check_rules(AstItemType::Static, ReferenceType::Define, &name, node.ident.span());
+        self.check_rules(
+            AstItemType::Static,
+            ReferenceType::Define,
+            &name,
+            node.ident.span(),
+        );
         syn::visit::visit_item_static(self, node);
     }
 
     fn visit_item_mod(&mut self, node: &'a syn::ItemMod) {
         let name = node.ident.to_string();
-        self.check_rules(AstItemType::Mod, ReferenceType::Define, &name, node.ident.span());
+        self.check_rules(
+            AstItemType::Mod,
+            ReferenceType::Define,
+            &name,
+            node.ident.span(),
+        );
         syn::visit::visit_item_mod(self, node);
     }
 
@@ -388,10 +425,14 @@ mod tests {
         }
     }
 
-    fn check_code_with_config(code: &str, rules: Vec<NamingRule>, file_path: &str) -> Vec<Violation> {
-        let mut config = E1901Config::default();
+    fn check_code_with_config(
+        code: &str,
+        rules: Vec<NamingRule>,
+        file_path: &str,
+    ) -> Vec<Violation> {
+        let mut config = E1904Config::default();
         config.rules = rules;
-        let checker = E1901AllowedNames { config };
+        let checker = E1904AllowedNames { config };
 
         let file = syn::parse_file(code).expect("Failed to parse");
         let mut violations = Vec::new();
@@ -501,7 +542,10 @@ mod tests {
         )];
 
         let violations = check_code_with_config(code, rules, "src/models/user.rs");
-        assert!(violations.is_empty(), "Empty allowed_paths should mean 'allowed everywhere'");
+        assert!(
+            violations.is_empty(),
+            "Empty allowed_paths should mean 'allowed everywhere'"
+        );
     }
 
     // ========== Rule enabled flag tests ==========
@@ -522,7 +566,10 @@ mod tests {
         }];
 
         let violations = check_code_with_config(code, rules, "src/models/user.rs");
-        assert!(violations.is_empty(), "Disabled rule should not produce violations");
+        assert!(
+            violations.is_empty(),
+            "Disabled rule should not produce violations"
+        );
     }
 
     #[test]
@@ -548,10 +595,10 @@ mod tests {
     fn test_rule_enabled_by_default() {
         // Test that rules are enabled by default when loaded from TOML
         let toml = r#"
-            [checkers.e1901_allowed_names]
+            [checkers.e1904_allowed_names]
             enabled = true
 
-            [[checkers.e1901_allowed_names.rules]]
+            [[checkers.e1904_allowed_names.rules]]
             item_types = ["struct"]
             reference_type = "define"
             name_patterns = [".*DTO$"]
@@ -560,20 +607,23 @@ mod tests {
         "#;
 
         let config = AnalyzerConfig::from_toml(toml).unwrap();
-        let e1901_config: E1901Config = config
-            .get_checker_config("e1901_allowed_names")
+        let e1904_config: E1904Config = config
+            .get_checker_config("e1904_allowed_names")
             .expect("Failed to load config");
 
-        assert!(e1901_config.rules[0].enabled, "Rule should be enabled by default");
+        assert!(
+            e1904_config.rules[0].enabled,
+            "Rule should be enabled by default"
+        );
     }
 
     #[test]
     fn test_rule_can_be_disabled_via_toml() {
         let toml = r#"
-            [checkers.e1901_allowed_names]
+            [checkers.e1904_allowed_names]
             enabled = true
 
-            [[checkers.e1901_allowed_names.rules]]
+            [[checkers.e1904_allowed_names.rules]]
             enabled = false
             item_types = ["struct"]
             reference_type = "define"
@@ -583,11 +633,14 @@ mod tests {
         "#;
 
         let config = AnalyzerConfig::from_toml(toml).unwrap();
-        let e1901_config: E1901Config = config
-            .get_checker_config("e1901_allowed_names")
+        let e1904_config: E1904Config = config
+            .get_checker_config("e1904_allowed_names")
             .expect("Failed to load config");
 
-        assert!(!e1901_config.rules[0].enabled, "Rule should be disabled via TOML");
+        assert!(
+            !e1904_config.rules[0].enabled,
+            "Rule should be disabled via TOML"
+        );
     }
 
     // ========== Wildcard item_types ("*") tests ==========
@@ -649,10 +702,10 @@ mod tests {
     #[test]
     fn test_wildcard_in_toml() {
         let toml = r#"
-            [checkers.e1901_allowed_names]
+            [checkers.e1904_allowed_names]
             enabled = true
 
-            [[checkers.e1901_allowed_names.rules]]
+            [[checkers.e1904_allowed_names.rules]]
             item_types = ["*"]
             reference_type = "define"
             name_patterns = ["^Bad.*"]
@@ -661,11 +714,11 @@ mod tests {
         "#;
 
         let config = AnalyzerConfig::from_toml(toml).unwrap();
-        let e1901_config: E1901Config = config
-            .get_checker_config("e1901_allowed_names")
+        let e1904_config: E1904Config = config
+            .get_checker_config("e1904_allowed_names")
             .expect("Failed to load config");
 
-        assert_eq!(e1901_config.rules[0].item_types, vec![AstItemType::All]);
+        assert_eq!(e1904_config.rules[0].item_types, vec![AstItemType::All]);
     }
 
     #[test]
@@ -685,7 +738,11 @@ mod tests {
         )];
 
         let violations = check_code_with_config(code, rules, "src/models/user.rs");
-        assert_eq!(violations.len(), 2, "Wildcard should match multiple item types");
+        assert_eq!(
+            violations.len(),
+            2,
+            "Wildcard should match multiple item types"
+        );
     }
 
     // ========== Reference type "use" tests ==========
@@ -705,16 +762,20 @@ mod tests {
         )];
 
         let violations = check_code_with_config(code, rules, "src/models/user.rs");
-        assert_eq!(violations.len(), 1, "Use reference type should match use statements");
+        assert_eq!(
+            violations.len(),
+            1,
+            "Use reference type should match use statements"
+        );
     }
 
     #[test]
     fn test_use_reference_type_in_toml() {
         let toml = r#"
-            [checkers.e1901_allowed_names]
+            [checkers.e1904_allowed_names]
             enabled = true
 
-            [[checkers.e1901_allowed_names.rules]]
+            [[checkers.e1904_allowed_names.rules]]
             item_types = ["use"]
             reference_type = "use"
             name_patterns = [".*sqlx.*\\*"]
@@ -723,11 +784,11 @@ mod tests {
         "#;
 
         let config = AnalyzerConfig::from_toml(toml).unwrap();
-        let e1901_config: E1901Config = config
-            .get_checker_config("e1901_allowed_names")
+        let e1904_config: E1904Config = config
+            .get_checker_config("e1904_allowed_names")
             .expect("Failed to load config");
 
-        assert_eq!(e1901_config.rules[0].reference_type, ReferenceType::Use);
+        assert_eq!(e1904_config.rules[0].reference_type, ReferenceType::Use);
     }
 
     #[test]
@@ -745,7 +806,10 @@ mod tests {
         )];
 
         let violations = check_code_with_config(code, rules, "src/models/user.rs");
-        assert!(violations.is_empty(), "Define reference type should not match use statements");
+        assert!(
+            violations.is_empty(),
+            "Define reference type should not match use statements"
+        );
     }
 
     // ========== Config loading tests ==========
@@ -753,12 +817,12 @@ mod tests {
     #[test]
     fn test_config_loading_from_toml() {
         let toml = r#"
-            [checkers.e1901_allowed_names]
+            [checkers.e1904_allowed_names]
             enabled = true
             severity = 3
             categories = ["compliance"]
 
-            [[checkers.e1901_allowed_names.rules]]
+            [[checkers.e1904_allowed_names.rules]]
             item_types = ["struct"]
             reference_type = "define"
             name_patterns = [".*DTO$"]
@@ -767,30 +831,33 @@ mod tests {
         "#;
 
         let config = AnalyzerConfig::from_toml(toml).unwrap();
-        let e1901_config: E1901Config = config
-            .get_checker_config("e1901_allowed_names")
-            .expect("Failed to load E1901 config");
+        let e1904_config: E1904Config = config
+            .get_checker_config("e1904_allowed_names")
+            .expect("Failed to load E1904 config");
 
-        assert!(e1901_config.enabled);
-        assert_eq!(e1901_config.rules.len(), 1);
-        assert_eq!(e1901_config.rules[0].item_types, vec![AstItemType::Struct]);
-        assert_eq!(e1901_config.rules[0].name_patterns, vec![".*DTO$".to_string()]);
+        assert!(e1904_config.enabled);
+        assert_eq!(e1904_config.rules.len(), 1);
+        assert_eq!(e1904_config.rules[0].item_types, vec![AstItemType::Struct]);
+        assert_eq!(
+            e1904_config.rules[0].name_patterns,
+            vec![".*DTO$".to_string()]
+        );
     }
 
     #[test]
     fn test_config_loading_with_multiple_rules() {
         let toml = r#"
-            [checkers.e1901_allowed_names]
+            [checkers.e1904_allowed_names]
             enabled = true
 
-            [[checkers.e1901_allowed_names.rules]]
+            [[checkers.e1904_allowed_names.rules]]
             item_types = ["struct"]
             reference_type = "define"
             name_patterns = [".*DTO$"]
             allowed_paths = ["^.*/api/.*$"]
             message = "DTOs must be in api"
 
-            [[checkers.e1901_allowed_names.rules]]
+            [[checkers.e1904_allowed_names.rules]]
             item_types = ["enum"]
             reference_type = "define"
             name_patterns = [".*Error$"]
@@ -799,54 +866,54 @@ mod tests {
         "#;
 
         let config = AnalyzerConfig::from_toml(toml).unwrap();
-        let e1901_config: E1901Config = config
-            .get_checker_config("e1901_allowed_names")
-            .expect("Failed to load E1901 config");
+        let e1904_config: E1904Config = config
+            .get_checker_config("e1904_allowed_names")
+            .expect("Failed to load E1904 config");
 
-        assert_eq!(e1901_config.rules.len(), 2);
-        assert_eq!(e1901_config.rules[0].item_types, vec![AstItemType::Struct]);
-        assert_eq!(e1901_config.rules[1].item_types, vec![AstItemType::Enum]);
+        assert_eq!(e1904_config.rules.len(), 2);
+        assert_eq!(e1904_config.rules[0].item_types, vec![AstItemType::Struct]);
+        assert_eq!(e1904_config.rules[1].item_types, vec![AstItemType::Enum]);
     }
 
     #[test]
     fn test_config_with_severity_as_integer() {
         let toml = r#"
-            [checkers.e1901_allowed_names]
+            [checkers.e1904_allowed_names]
             enabled = true
             severity = 2
         "#;
 
         let config = AnalyzerConfig::from_toml(toml).unwrap();
-        let e1901_config: E1901Config = config
-            .get_checker_config("e1901_allowed_names")
-            .expect("Failed to load E1901 config");
+        let e1904_config: E1904Config = config
+            .get_checker_config("e1904_allowed_names")
+            .expect("Failed to load E1904 config");
 
-        assert_eq!(e1901_config.severity, crate::config::SeverityLevel::Medium);
+        assert_eq!(e1904_config.severity, crate::config::SeverityLevel::Medium);
     }
 
     #[test]
     fn test_config_with_severity_as_string() {
         let toml = r#"
-            [checkers.e1901_allowed_names]
+            [checkers.e1904_allowed_names]
             enabled = true
             severity = "low"
         "#;
 
         let config = AnalyzerConfig::from_toml(toml).unwrap();
-        let e1901_config: E1901Config = config
-            .get_checker_config("e1901_allowed_names")
-            .expect("Failed to load E1901 config");
+        let e1904_config: E1904Config = config
+            .get_checker_config("e1904_allowed_names")
+            .expect("Failed to load E1904 config");
 
-        assert_eq!(e1901_config.severity, crate::config::SeverityLevel::Low);
+        assert_eq!(e1904_config.severity, crate::config::SeverityLevel::Low);
     }
 
     #[test]
     fn test_invalid_item_type_rejected() {
         let toml = r#"
-            [checkers.e1901_allowed_names]
+            [checkers.e1904_allowed_names]
             enabled = true
 
-            [[checkers.e1901_allowed_names.rules]]
+            [[checkers.e1904_allowed_names.rules]]
             item_types = ["invalid_type"]
             reference_type = "define"
             name_patterns = [".*"]
@@ -854,7 +921,7 @@ mod tests {
         "#;
 
         let config = AnalyzerConfig::from_toml(toml).unwrap();
-        let result: Result<E1901Config, _> = config.get_checker_config("e1901_allowed_names");
+        let result: Result<E1904Config, _> = config.get_checker_config("e1904_allowed_names");
 
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("invalid_type"));
@@ -863,10 +930,10 @@ mod tests {
     #[test]
     fn test_invalid_reference_type_rejected() {
         let toml = r#"
-            [checkers.e1901_allowed_names]
+            [checkers.e1904_allowed_names]
             enabled = true
 
-            [[checkers.e1901_allowed_names.rules]]
+            [[checkers.e1904_allowed_names.rules]]
             item_types = ["struct"]
             reference_type = "invalid_ref"
             name_patterns = [".*"]
@@ -874,7 +941,7 @@ mod tests {
         "#;
 
         let config = AnalyzerConfig::from_toml(toml).unwrap();
-        let result: Result<E1901Config, _> = config.get_checker_config("e1901_allowed_names");
+        let result: Result<E1904Config, _> = config.get_checker_config("e1904_allowed_names");
 
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("invalid_ref"));

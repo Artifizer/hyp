@@ -17,7 +17,7 @@ static mut COUNTER: i32 = 0;
 pub fn e1010_bad_mutable_static() {
     // PROBLEM E1003: Direct use of unsafe code
     unsafe {
-        // PROBLEM E1904: No safety documentation
+        // PROBLEM E1908: No safety documentation
         // PROBLEM E1010: Accessing mutable static without synchronization
         COUNTER += 1;
     }

@@ -1,4 +1,4 @@
-//! E1903: File location control
+//! E1906: File location control
 //!
 //! Enforces that specific files can only exist in designated locations.
 //! Useful for ensuring configuration files, build scripts, or special modules
@@ -35,8 +35,12 @@ fn default_file_message() -> String {
 
 impl FileLocationRule {
     fn compile_patterns(&self) -> Result<(Regex, Vec<Regex>), String> {
-        let filename_regex = Regex::new(&self.filename_pattern)
-            .map_err(|e| format!("Invalid filename pattern '{}': {}", self.filename_pattern, e))?;
+        let filename_regex = Regex::new(&self.filename_pattern).map_err(|e| {
+            format!(
+                "Invalid filename pattern '{}': {}",
+                self.filename_pattern, e
+            )
+        })?;
 
         let path_regexes: Result<Vec<_>, _> = self
             .allowed_paths
@@ -49,14 +53,14 @@ impl FileLocationRule {
 }
 
 define_checker! {
-    /// Checker for E1903: File location control
-    E1903FileLocation,
-    code = "E1903",
+    /// Checker for E1906: File location control
+    E1906FileLocation,
+    code = "E1906",
     name = "File location violates project rules",
     suggestions = "Move the file to an allowed location according to project structure requirements",
     target_items = [],
-    config_entry_name = "e1903_file_location",
-    config = E1903Config {
+    config_entry_name = "e1906_file_location",
+    config = E1906Config {
         enabled: bool = true,
         severity: crate::config::SeverityLevel = crate::config::SeverityLevel::Medium,
         categories: Vec<crate::config::CheckerCategory> = vec![crate::config::CheckerCategory::Compliance],
@@ -148,9 +152,9 @@ mod tests {
     }
 
     fn check_file_with_config(rules: Vec<FileLocationRule>, file_path: &str) -> Vec<Violation> {
-        let mut config = E1903Config::default();
+        let mut config = E1906Config::default();
         config.rules = rules;
-        let checker = E1903FileLocation { config };
+        let checker = E1906FileLocation { config };
 
         // Parse empty file (we only check the path)
         let file = syn::parse_file("fn dummy() {}").expect("Failed to parse");
@@ -171,7 +175,9 @@ mod tests {
 
         let violations = check_file_with_config(rules, "src/config/Clippy.toml");
         assert_eq!(violations.len(), 1);
-        assert!(violations[0].message.contains("Clippy.toml must be at root"));
+        assert!(violations[0]
+            .message
+            .contains("Clippy.toml must be at root"));
     }
 
     #[test]
@@ -253,7 +259,10 @@ mod tests {
         }];
 
         let violations = check_file_with_config(rules, "src/config/Clippy.toml");
-        assert!(violations.is_empty(), "Disabled rule should not produce violations");
+        assert!(
+            violations.is_empty(),
+            "Disabled rule should not produce violations"
+        );
     }
 
     #[test]
@@ -261,21 +270,24 @@ mod tests {
         use crate::config::AnalyzerConfig;
 
         let toml = r#"
-            [checkers.e1903_file_location]
+            [checkers.e1906_file_location]
             enabled = true
 
-            [[checkers.e1903_file_location.rules]]
+            [[checkers.e1906_file_location.rules]]
             filename_pattern = "^Clippy\\.toml$"
             allowed_paths = ["^[^/]+/Clippy\\.toml$"]
             message = "Clippy.toml must be at root"
         "#;
 
         let config = AnalyzerConfig::from_toml(toml).unwrap();
-        let e1903_config: E1903Config = config
-            .get_checker_config("e1903_file_location")
+        let e1906_config: E1906Config = config
+            .get_checker_config("e1906_file_location")
             .expect("Failed to load config");
 
-        assert!(e1903_config.rules[0].enabled, "Rule should be enabled by default");
+        assert!(
+            e1906_config.rules[0].enabled,
+            "Rule should be enabled by default"
+        );
     }
 
     #[test]
@@ -283,10 +295,10 @@ mod tests {
         use crate::config::AnalyzerConfig;
 
         let toml = r#"
-            [checkers.e1903_file_location]
+            [checkers.e1906_file_location]
             enabled = true
 
-            [[checkers.e1903_file_location.rules]]
+            [[checkers.e1906_file_location.rules]]
             enabled = false
             filename_pattern = "^Clippy\\.toml$"
             allowed_paths = ["^[^/]+/Clippy\\.toml$"]
@@ -294,10 +306,13 @@ mod tests {
         "#;
 
         let config = AnalyzerConfig::from_toml(toml).unwrap();
-        let e1903_config: E1903Config = config
-            .get_checker_config("e1903_file_location")
+        let e1906_config: E1906Config = config
+            .get_checker_config("e1906_file_location")
             .expect("Failed to load config");
 
-        assert!(!e1903_config.rules[0].enabled, "Rule should be disabled via TOML");
+        assert!(
+            !e1906_config.rules[0].enabled,
+            "Rule should be disabled via TOML"
+        );
     }
 }

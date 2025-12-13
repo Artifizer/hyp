@@ -72,7 +72,7 @@ pub fn e1601_bad_aliasing() {
 
     // PROBLEM E1003: Direct use of unsafe code
     unsafe {
-        // PROBLEM E1904: No safety documentation
+        // PROBLEM E1908: No safety documentation
         // PROBLEM E1601: Multiple mutable aliases to same memory
         *ptr1 = 10;
         *ptr2 = 20;

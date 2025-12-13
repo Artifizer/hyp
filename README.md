@@ -3,7 +3,7 @@
 
 # Hyp - Rust Code Quality Analyzer
 
-**Hyp** is a static code analyzer that catches **compilable but problematic Rust patterns** that standard tools typically miss. It identifies code that compiles successfully but may confuse developers, cause runtime failures, or violate project-specific conventions helping teams write clearer, safer, and more maintainable code with less code review overhead.
+**Hyp** is a static code analyzer that catches **compilable but problematic Rust patterns** that standard tools typically miss. It identifies code that compiles successfully but may confuse developers, cause runtime problems, or violate project-specific conventions helping teams write clearer, safer, and more maintainable code with less code review overhead.
 
 ## The Problem Hyp Solves
 
@@ -15,9 +15,11 @@ Rust's compiler excels at preventing memory bugs and race conditions, but it **a
 2. **Easy to bypass**: Developers (or LLMs) can disable lints with `#[allow(...)]` annotations
 3. **Hard to enforce**: Inline overrides make it difficult to maintain coding standards across large teams
 
-**dylint** addresses the custom rules limitation by allowing you to build your own lints, but it still allows the same bypass mechanisms, making it challenging to control massively AI-generated code.
+**dylint** addresses the custom rules limitation by allowing you to build your own lints, but it analyzes HIR/HIM, not raw *.rs files. It only sees code that Cargo compiles and so it can not lint snippets
 
 **Hyp fills this gap** by:
+- Analyzing raw *.rs files directly without requiring full compilation (like `grep`)
+- Enabling fast IDE integration for instant feedback without project builds
 - Supporting **custom project-specific rules** (tenant filters, architectural boundaries, etc.)
 - **Intentionally preventing per-file bypasses** - rules are enforced at the project level
 - Providing **semantic analysis** for patterns that require understanding code structure
@@ -25,7 +27,7 @@ Rust's compiler excels at preventing memory bugs and race conditions, but it **a
 
 This is especially important when using AI code generation or onboarding new team members where consistency and safety cannot be compromised.
 
-> Keep in mind that no tool—including Rust's compiler, Clippy, Kani, and Hyp—can catch every possible bug or logic error. A comprehensive approach combining multiple tools and thorough manual code review remains essential.
+> Keep in mind that no tool including Rust's compiler, Clippy, DyLint, Kani, and Hyp can catch every possible bug or logic error. A comprehensive approach combining multiple tools and thorough manual code review remains essential.
 
 ## What Hyp Catches (That Other Tools Don't)
 
@@ -103,9 +105,31 @@ pub fn process_user_input(data: Option<String>) -> String {
     data.unwrap()  // Clippy won't warn - but this WILL panic in production!
     // Team policy: "Never use unwrap on user input" - but Clippy can't enforce it
 }
+
+// Example 7: Prohibit std::thread::spawn in async/tokio codebases (Custom project rule)
+// Clippy: Cannot enforce async runtime boundaries
+// Hyp: Custom checker E1512 ensures only tokio::task::spawn_blocking is used
+// File: src/services/user_service.rs
+pub async fn process_users(users: Vec<User>) {
+    for user in users {
+        std::thread::spawn(move || {  // ❌ Breaks tokio runtime!
+            expensive_computation(&user);  // Context loss, no tracing, can't await
+        });
+    }
+}
+
+// CORRECT: Use tokio::task::spawn_blocking instead
+pub async fn process_users_correct(users: Vec<User>) {
+    for user in users {
+        tokio::task::spawn_blocking(move || {  // ✅ Proper tokio integration
+            expensive_computation(&user);
+        }).await.unwrap();
+    }
+}
+
 ```
 
-See also [HYP_VS_CLIPPY.md](HYP_VS_CLIPPY.md) and [hyp-examples](hyp-examples/)
+See complete comparison in [HYP_VS_CLIPPY.md](HYP_VS_CLIPPY.md) and [hyp-examples](hyp-examples/)
 
 ## Quick start
 
@@ -119,9 +143,14 @@ Build Hyp and run it over the `hyp-examples` source code and see the errors:
 cargo run --bin hyp -- check crates/hyp-examples/
 ```
 
-Now run it over the Hyp code itself, no flagged errors expected (TODO):
+Now run it over the Hyp code itself, no flagged errors expected (TODO - 328 violations found):
 ```bash
-cargo run --bin hyp -- check crates/hyp/
+cargo run --bin hyp -- check crates/hyp-checks-generic/
+```
+
+Ensure all the examples and Hyp lints are correct (TODO - 388 validation issues found):
+```bash
+cargo run --bin hyp -- verify-examples crates/hyp-examples
 ```
 
 ## Conceptual Model
@@ -310,7 +339,7 @@ This is useful when you want to focus on specific problem categories or temporar
 
 The E19 category provides powerful project-specific enforcement capabilities through configurable rules. These checkers help maintain architectural boundaries, naming conventions, and code organization standards.
 
-#### E1901: Allowed Names and Paths Control
+#### E1904: Allowed Names and Paths Control
 
 Enforces where specific types of items (structs, enums, functions, etc.) with certain naming patterns can be defined.
 
@@ -322,13 +351,13 @@ Enforces where specific types of items (structs, enums, functions, etc.) with ce
 **Configuration example:**
 
 ```toml
-[checkers.e1901_allowed_names]
+[checkers.e1904_allowed_names]
 enabled = true
 severity = 3
 categories = ["compliance"]
 
 # Define multiple rules
-[[checkers.e1901_allowed_names.rules]]
+[[checkers.e1904_allowed_names.rules]]
 enabled = true
 item_types = ["struct"]
 reference_type = "define"
@@ -336,7 +365,7 @@ name_patterns = [".*DTO$", ".*Dto$"]  # Matches any struct ending with "DTO"
 allowed_paths = ["^.*/api/.*\\.rs$"]  # Only in api/ directory
 message = "DTO struct '{name}' can not be defined outside {path}"
 
-[[checkers.e1901_allowed_names.rules]]
+[[checkers.e1904_allowed_names.rules]]
 enabled = true
 item_types = ["use"]
 reference_type = "use"
@@ -352,7 +381,7 @@ message = "SQLx can not be imported and used in {path}"
 - `allowed_paths`: Array of regex patterns for file paths where items are allowed
 - `message`: Custom violation message with placeholders: `{type}`, `{name}`, `{path}`, `{allowed_paths}`
 
-#### E1902: Inline Directive Control
+#### E1905: Inline Directive Control
 
 Prevents bypassing project rules with inline directives like `#[allow(clippy::...)]` in unauthorized locations. Critical for maintaining standards in AI-generated code.
 
@@ -364,20 +393,20 @@ Prevents bypassing project rules with inline directives like `#[allow(clippy::..
 **Configuration example:**
 
 ```toml
-[checkers.e1902_inline_directives]
+[checkers.e1905_inline_directives]
 enabled = true
 severity = 3
 categories = ["compliance"]
 
 # Block Clippy allows everywhere - force Clippy.toml usage
-[[checkers.e1902_inline_directives.rules]]
+[[checkers.e1905_inline_directives.rules]]
 enabled = true
 directive_patterns = ["allow\\(clippy::.*\\)"]
 allowed_paths = ["^$"]  # Empty = nowhere allowed
 message = "Inline clippy '{directive}' is not alowed in {path} - use Clippy.toml for project-wide config"
 
 # Allow warning suppression only in tests
-[[checkers.e1902_inline_directives.rules]]
+[[checkers.e1905_inline_directives.rules]]
 enabled = true
 directive_patterns = ["allow\\(warnings\\)", "allow\\(dead_code\\)"]
 allowed_paths = ["^.*/tests/.*\\.rs$", "^.*_test\\.rs$"]
@@ -430,7 +459,7 @@ message = "Proto file '{filename}' in {path} must be in proto/ directory"
 - `allowed_paths`: Array of regex patterns for allowed file paths
 - `message`: Custom violation message with placeholders: `{filename}`, `{path}`, `{allowed_paths}`
 
-#### E1904: Unsafe Justification Requirement
+#### E1908: Unsafe Justification Requirement
 
 Requires every unsafe block to have a justification comment (e.g., `// SAFETY:`). Optionally restricts unsafe blocks to specific paths.
 
@@ -443,7 +472,7 @@ Requires every unsafe block to have a justification comment (e.g., `// SAFETY:`)
 **Configuration example:**
 
 ```toml
-[checkers.e1904_unsafe_justification]
+[checkers.e1908_unsafe_justification]
 enabled = true
 severity = 3
 categories = ["compliance"]
@@ -451,7 +480,7 @@ require_justification = true
 comment_patterns = ["SAFETY:", "UNSAFE:"]
 
 # Optional: Restrict unsafe to specific paths
-[[checkers.e1904_unsafe_justification.path_rules]]
+[[checkers.e1908_unsafe_justification.path_rules]]
 comment_patterns = ["SAFETY:"]
 allowed_paths = ["^.*/unsafe_ops/.*\\.rs$", "^.*/ffi/.*\\.rs$"]
 message = "Unsafe blocks in {path} only allowed in unsafe_ops/ or ffi/ directories"

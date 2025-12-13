@@ -66,7 +66,7 @@ pub fn e1602_bad_use_after_free() {
 
     // PROBLEM E1003: Direct use of unsafe code
     unsafe {
-        // PROBLEM E1904: No safety documentation
+        // PROBLEM E1908: No safety documentation
         // PROBLEM E1602: Accessing freed memory
         let _value = *ptr;
     }

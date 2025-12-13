@@ -21,7 +21,7 @@ pub fn e1005_bad_raw_pointer_deref() {
 
     // PROBLEM E1003: Direct use of unsafe code
     unsafe {
-        // PROBLEM E1904: No safety documentation
+        // PROBLEM E1908: No safety documentation
         // PROBLEM E1005: Dereferencing dangling pointer (undefined behavior)
         let _value = *ptr;
     }

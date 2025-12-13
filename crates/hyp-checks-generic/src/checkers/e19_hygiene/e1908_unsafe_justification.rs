@@ -1,4 +1,4 @@
-//! E1904: Unsafe justification requirement
+//! E1908: Unsafe justification requirement
 //!
 //! Requires every unsafe block to have a justification comment (e.g., `// SAFETY:`).
 
@@ -42,14 +42,14 @@ impl UnsafeJustificationRule {
 }
 
 define_checker! {
-    /// Checker for E1904: Unsafe justification requirement
-    E1904UnsafeJustification,
-    code = "E1904",
+    /// Checker for E1908: Unsafe justification requirement
+    E1908UnsafeJustification,
+    code = "E1908",
     name = "Unsafe block requires justification comment",
     suggestions = "Add a comment explaining why this unsafe code is sound (e.g., // SAFETY: ...)",
     target_items = [Function, Const, Static],
-    config_entry_name = "e1904_unsafe_justification",
-    config = E1904Config {
+    config_entry_name = "e1908_unsafe_justification",
+    config = E1908Config {
         enabled: bool = true,
         severity: crate::config::SeverityLevel = crate::config::SeverityLevel::High,
         categories: Vec<crate::config::CheckerCategory> = vec![crate::config::CheckerCategory::Compliance],
@@ -74,7 +74,7 @@ define_checker! {
 struct UnsafeJustificationVisitor<'a> {
     violations: Vec<Violation>,
     file_path: &'a str,
-    checker: &'a E1904UnsafeJustification,
+    checker: &'a E1908UnsafeJustification,
 }
 
 impl<'a> UnsafeJustificationVisitor<'a> {
@@ -176,8 +176,8 @@ impl<'a> Visit<'a> for UnsafeJustificationVisitor<'a> {
 mod tests {
     use super::*;
 
-    fn check_code_with_config(code: &str, config: E1904Config, file_path: &str) -> Vec<Violation> {
-        let checker = E1904UnsafeJustification { config };
+    fn check_code_with_config(code: &str, config: E1908Config, file_path: &str) -> Vec<Violation> {
+        let checker = E1908UnsafeJustification { config };
         let file = syn::parse_file(code).expect("Failed to parse");
         let mut violations = Vec::new();
         for item in &file.items {
@@ -196,7 +196,7 @@ mod tests {
             }
         "#;
 
-        let config = E1904Config::default();
+        let config = E1908Config::default();
         let violations = check_code_with_config(code, config, "src/main.rs");
         assert_eq!(violations.len(), 1);
         assert!(violations[0].message.contains("requires justification"));
@@ -213,7 +213,7 @@ mod tests {
             }
         "#;
 
-        let config = E1904Config::default();
+        let config = E1908Config::default();
         let violations = check_code_with_config(code, config, "src/main.rs");
         // Note: syn doesn't capture line comments (//), only doc comments (///)
         // Doc comments on unsafe blocks aren't standard Rust syntax, so this will still flag
@@ -233,7 +233,7 @@ mod tests {
             }
         "#;
 
-        let mut config = E1904Config::default();
+        let mut config = E1908Config::default();
         config.path_rules = vec![UnsafeJustificationRule {
             comment_patterns: vec!["SAFETY:".to_string()],
             allowed_paths: vec!["^.*/unsafe_ops/.*\\.rs$".to_string()],
@@ -258,7 +258,7 @@ mod tests {
             }
         "#;
 
-        let config = E1904Config::default();
+        let config = E1908Config::default();
         let violations = check_code_with_config(code, config, "src/main.rs");
         assert!(violations.is_empty());
     }
@@ -273,7 +273,7 @@ mod tests {
             }
         "#;
 
-        let mut config = E1904Config::default();
+        let mut config = E1908Config::default();
         config.require_justification = false;
         let violations = check_code_with_config(code, config, "src/main.rs");
         assert!(violations.is_empty());

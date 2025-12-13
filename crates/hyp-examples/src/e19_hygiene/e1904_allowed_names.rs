@@ -1,4 +1,4 @@
-/// E1901: Allowed names and paths control
+/// E1904: Allowed names and paths control
 /// Severity: HIGH
 /// LLM confusion: 3 (MEDIUM)
 ///
@@ -35,50 +35,59 @@
 /// // Move DTO definitions from src/models/ to src/api/
 /// ```
 ///
-/// Mitigation: Configure E1901 in Hyp.toml with project-specific rules for
+/// Mitigation: Configure E1904 in Hyp.toml with project-specific rules for
 /// item names, types, and allowed paths. Use regex patterns for flexibility.
 
 // ============================================================================
 // PROBLEMATIC PATTERNS
 // ============================================================================
 // Note: This file demonstrates both naming conventions:
-// - Structs use PascalCase: E1901BadUserDtoInModels, E1901GoodUserModel
-// - Functions use snake_case: e1901_bad_wildcard_import_usage, e1901_good_explicit_imports
+// - Structs use PascalCase: E1904BadUserDtoInModels, E1904GoodUserModel
+// - Functions use snake_case: e1904_bad_wildcard_import_usage, e1904_good_explicit_imports
 // Both conventions are supported and follow Rust naming standards.
 
-/// PROBLEM E1901: DTO struct defined outside api/ directory
-/// This would be flagged if E1901 is configured to restrict DTOs to api/
-pub struct E1901BadUserDtoInModels {
+/// PROBLEM E1904: DTO struct defined outside api/ directory
+/// This would be flagged if E1904 is configured to restrict DTOs to api/
+pub struct E1904BadUserDtoInModels {
     pub id: i32,
     pub name: String,
 }
 
-/// PROBLEM E1901: Request/Response types outside api/
-pub struct E1901BadCreateUserRequest {
+/// PROBLEM E1904: Request/Response types outside api/
+pub struct E1904BadCreateUserRequest {
     pub name: String,
     pub email: String,
 }
 
-/// PROBLEM E1901: Wildcard import in restricted location
+/// PROBLEM E1904: Wildcard import in restricted location
 /// This demonstrates the pattern (actual detection would need use statement)
-pub fn e1901_bad_wildcard_import_usage() {
+pub fn e1904_bad_wildcard_import_usage() {
     // If this file had: use sqlx::*;
-    // And E1901 was configured to block sqlx::* in api/, it would be flagged
+    // And E1904 was configured to block sqlx::* in api/, it would be flagged
     let _ = "sqlx::* import would be here";
 }
 
-/// PROBLEM E1901: Configuration struct in wrong location
-pub struct E1901BadAppConfigInModels {
+/// PROBLEM E1904: Configuration struct in wrong location
+pub struct E1904BadAppConfigInModels {
     pub database_url: String,
     pub port: u16,
 }
 
 /// Entry point for problem demonstration
-pub fn e1901_entry() -> Result<(), Box<dyn std::error::Error>> {
-    let _ = E1901BadUserDtoInModels { id: 1, name: "test".to_string() };
-    let _ = E1901BadCreateUserRequest { name: "test".to_string(), email: "test@example.com".to_string() };
-    e1901_bad_wildcard_import_usage();
-    let _ = E1901BadAppConfigInModels { database_url: "".to_string(), port: 8080 };
+pub fn e1904_entry() -> Result<(), Box<dyn std::error::Error>> {
+    let _ = E1904BadUserDtoInModels {
+        id: 1,
+        name: "test".to_string(),
+    };
+    let _ = E1904BadCreateUserRequest {
+        name: "test".to_string(),
+        email: "test@example.com".to_string(),
+    };
+    e1904_bad_wildcard_import_usage();
+    let _ = E1904BadAppConfigInModels {
+        database_url: "".to_string(),
+        port: 8080,
+    };
     Ok(())
 }
 
@@ -87,27 +96,27 @@ pub fn e1901_entry() -> Result<(), Box<dyn std::error::Error>> {
 // ============================================================================
 
 /// GOOD: Domain model without DTO suffix (allowed anywhere)
-pub struct E1901GoodUserModel {
+pub struct E1904GoodUserModel {
     pub id: i32,
     pub name: String,
     pub email: String,
 }
 
 /// GOOD: Internal struct without restricted naming pattern
-pub struct E1901GoodUserData {
+pub struct E1904GoodUserData {
     pub id: i32,
     pub name: String,
 }
 
 /// GOOD: Explicit imports instead of wildcards
-pub fn e1901_good_explicit_imports() {
+pub fn e1904_good_explicit_imports() {
     // Instead of: use sqlx::*;
     // Use: use sqlx::{Pool, Postgres};
     let _ = "explicit imports";
 }
 
 /// GOOD: Configuration in proper location (config/ directory)
-pub struct E1901GoodSettings {
+pub struct E1904GoodSettings {
     pub database_url: String,
     pub port: u16,
 }
@@ -122,7 +131,7 @@ mod tests {
 
     #[test]
     fn test_good_model_structure() {
-        let user = E1901GoodUserModel {
+        let user = E1904GoodUserModel {
             id: 1,
             name: "Alice".to_string(),
             email: "alice@example.com".to_string(),
@@ -132,7 +141,7 @@ mod tests {
 
     #[test]
     fn test_good_data_structure() {
-        let data = E1901GoodUserData {
+        let data = E1904GoodUserData {
             id: 2,
             name: "Bob".to_string(),
         };
@@ -141,7 +150,7 @@ mod tests {
 
     #[test]
     fn test_good_settings() {
-        let settings = E1901GoodSettings {
+        let settings = E1904GoodSettings {
             database_url: "postgres://localhost".to_string(),
             port: 5432,
         };

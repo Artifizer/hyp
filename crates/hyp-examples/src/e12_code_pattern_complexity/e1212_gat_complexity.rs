@@ -61,7 +61,7 @@ impl<'data, T> LendingIterator for WindowsMut<'data, T> {
 
         // PROBLEM E1003: Direct use of unsafe code
         unsafe {
-            // PROBLEM E1904: No safety documentation
+            // PROBLEM E1908: No safety documentation
             // PROBLEM E1212: Complex lifetime juggling with GATs
             Some(std::slice::from_raw_parts_mut(
                 self.data.as_mut_ptr().add(start),

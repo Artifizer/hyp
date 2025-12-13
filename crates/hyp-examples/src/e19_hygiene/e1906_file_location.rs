@@ -1,4 +1,4 @@
-/// E1903: File location control
+/// E1906: File location control
 /// Severity: MEDIUM
 /// LLM confusion: 2 (LOW)
 ///
@@ -45,52 +45,52 @@
 /// └── examples/        ✓ Examples
 /// ```
 ///
-/// Mitigation: Configure E1903 in Hyp.toml to specify filename patterns and
+/// Mitigation: Configure E1906 in Hyp.toml to specify filename patterns and
 /// their allowed paths. Use regex for flexible matching.
 
 // ============================================================================
 // PROBLEMATIC PATTERNS
 // ============================================================================
 // Note: Functions use snake_case following Rust naming conventions:
-// e1903_bad_config_location_example, e1903_good_root_config, etc.
+// e1906_bad_config_location_example, e1906_good_root_config, etc.
 
-/// PROBLEM E1903: This file demonstrates the concept
-/// In reality, E1903 checks file paths, not code content
+/// PROBLEM E1906: This file demonstrates the concept
+/// In reality, E1906 checks file paths, not code content
 /// If this file were named "Clippy.toml" and located in src/config/,
-/// it would be flagged by E1903
+/// it would be flagged by E1906
 
-/// PROBLEM E1903: Configuration file in wrong location
+/// PROBLEM E1906: Configuration file in wrong location
 /// Example: src/config/Clippy.toml instead of ./Clippy.toml
-pub fn e1903_bad_config_location_example() {
+pub fn e1906_bad_config_location_example() {
     // This function represents the concept that Clippy.toml
     // should be at project root, not in subdirectories
     let _ = "Clippy.toml in src/config/ would be flagged";
 }
 
-/// PROBLEM E1903: Proto file outside proto/ directory
+/// PROBLEM E1906: Proto file outside proto/ directory
 /// Example: src/api/user.proto instead of proto/user.proto
-pub fn e1903_bad_proto_location_example() {
+pub fn e1906_bad_proto_location_example() {
     let _ = "user.proto in src/api/ would be flagged";
 }
 
-/// PROBLEM E1903: Build script in wrong location
+/// PROBLEM E1906: Build script in wrong location
 /// Example: src/build.rs instead of ./build.rs
-pub fn e1903_bad_build_script_location() {
+pub fn e1906_bad_build_script_location() {
     let _ = "build.rs in src/ would be flagged";
 }
 
-/// PROBLEM E1903: Migration file in wrong location
+/// PROBLEM E1906: Migration file in wrong location
 /// Example: src/migrations/001_init.sql instead of migrations/001_init.sql
-pub fn e1903_bad_migration_location() {
+pub fn e1906_bad_migration_location() {
     let _ = "SQL migration in src/ would be flagged";
 }
 
 /// Entry point for problem demonstration
-pub fn e1903_entry() -> Result<(), Box<dyn std::error::Error>> {
-    e1903_bad_config_location_example();
-    e1903_bad_proto_location_example();
-    e1903_bad_build_script_location();
-    e1903_bad_migration_location();
+pub fn e1906_entry() -> Result<(), Box<dyn std::error::Error>> {
+    e1906_bad_config_location_example();
+    e1906_bad_proto_location_example();
+    e1906_bad_build_script_location();
+    e1906_bad_migration_location();
     Ok(())
 }
 
@@ -99,34 +99,34 @@ pub fn e1903_entry() -> Result<(), Box<dyn std::error::Error>> {
 // ============================================================================
 
 /// GOOD: Configuration files at project root
-pub fn e1903_good_root_config() {
+pub fn e1906_good_root_config() {
     // Clippy.toml at ./Clippy.toml ✓
     // rustfmt.toml at ./rustfmt.toml ✓
     let _ = "Config files at project root";
 }
 
 /// GOOD: Proto files in proto/ directory
-pub fn e1903_good_proto_location() {
+pub fn e1906_good_proto_location() {
     // proto/user.proto ✓
     // proto/order.proto ✓
     let _ = "Proto files in proto/ directory";
 }
 
 /// GOOD: Build scripts at project root
-pub fn e1903_good_build_script() {
+pub fn e1906_good_build_script() {
     // ./build.rs ✓
     let _ = "build.rs at project root";
 }
 
 /// GOOD: Migrations in migrations/ directory
-pub fn e1903_good_migrations() {
+pub fn e1906_good_migrations() {
     // migrations/001_init.sql ✓
     // migrations/002_add_users.sql ✓
     let _ = "Migrations in migrations/ directory";
 }
 
 /// GOOD: Source files in src/
-pub fn e1903_good_source_location() {
+pub fn e1906_good_source_location() {
     // src/main.rs ✓
     // src/lib.rs ✓
     // src/api/mod.rs ✓
@@ -143,27 +143,27 @@ mod tests {
 
     #[test]
     fn test_good_config_concept() {
-        e1903_good_root_config();
-        // In practice, E1903 would check actual file paths
+        e1906_good_root_config();
+        // In practice, E1906 would check actual file paths
     }
 
     #[test]
     fn test_good_proto_concept() {
-        e1903_good_proto_location();
+        e1906_good_proto_location();
     }
 
     #[test]
     fn test_good_build_concept() {
-        e1903_good_build_script();
+        e1906_good_build_script();
     }
 
     #[test]
     fn test_good_migrations_concept() {
-        e1903_good_migrations();
+        e1906_good_migrations();
     }
 
     #[test]
     fn test_good_source_concept() {
-        e1903_good_source_location();
+        e1906_good_source_location();
     }
 }

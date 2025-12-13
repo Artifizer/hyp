@@ -19,7 +19,7 @@ pub fn e1006_bad_unsafe_transmute() {
     let x: u32 = 42;
 
     // PROBLEM E1003: Direct use of unsafe code
-    // PROBLEM E1904: No safety documentation
+    // PROBLEM E1908: No safety documentation
     // PROBLEM E1006: transmute without verifying size/alignment compatibility
     let _y: f32 = unsafe { std::mem::transmute(x) };
 }
@@ -33,10 +33,10 @@ pub fn e1006_entry() -> Result<(), Box<dyn std::error::Error>> {
 // GOOD EXAMPLES - Proper alternatives
 // ============================================================================
 
-use crate::test_constants::MAGIC_U64;
+use crate::test_constants::IEEE_754_FORTY_TWO;
 use crate::test_constants::MAGIC_F32;
 use crate::test_constants::MAGIC_U32;
-use crate::test_constants::IEEE_754_FORTY_TWO;
+use crate::test_constants::MAGIC_U64;
 
 /// GOOD: Use safe byte conversion methods
 pub fn e1006_good_from_bytes() -> f32 {

@@ -48,7 +48,7 @@ impl<T> Drop for UnsafeWrapper<T> {
     fn drop(&mut self) {
         // PROBLEM E1003: Direct use of unsafe code
         unsafe {
-            // PROBLEM E1904: No safety documentation
+            // PROBLEM E1908: No safety documentation
             drop(Box::from_raw(self.ptr.as_ptr()));
         }
     }
@@ -66,7 +66,7 @@ pub fn e1012_bad_wrapper_get() -> Result<(), Box<dyn std::error::Error>> {
     let wrapper = UnsafeWrapper::e1012_bad_unsafe_auto_trait(42);
     // PROBLEM E1003: Direct use of unsafe code
     unsafe {
-        // PROBLEM E1904: No safety documentation
+        // PROBLEM E1908: No safety documentation
         let _ = wrapper.e1012_bad_get();
     }
     Ok(())

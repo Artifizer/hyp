@@ -71,7 +71,7 @@ pub fn e1609_bad_invalid_slice() {
 
     // PROBLEM E1003: Direct use of unsafe code
     unsafe {
-        // PROBLEM E1904: No safety documentation
+        // PROBLEM E1908: No safety documentation
         // PROBLEM E1609: Creating slice with length beyond actual data
         let _slice = std::slice::from_raw_parts(ptr, 100);
     }

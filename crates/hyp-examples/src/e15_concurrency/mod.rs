@@ -11,3 +11,5 @@ pub mod e1508_sleep_instead_of_sync;
 pub mod e1509_channel_lifetime;
 pub mod e1510_mutex_instead_of_rwlock;
 pub mod e1511_unbounded_spawning;
+pub mod e1512_prohibit_std_thread_spawn;
+pub mod e1513_blocking_syscalls_async;

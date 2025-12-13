@@ -30,6 +30,8 @@
 //! }
 //! ```
 
+// Enable the coverage_attribute feature when running coverage tests
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 #![warn(missing_docs)]
 
 use thiserror::Error;
@@ -56,8 +58,8 @@ pub use violation::{CheckerSeverity, Severity, Violation};
 
 // Re-export checker configs for convenience
 pub use checkers::e10_unsafe_code::{
-    E1001Config, E1002Config, E1003Config, E1007Config, E1008Config, E1010Config,
-    E1013Config, E1014Config, E1015Config, E1016Config,
+    E1001Config, E1002Config, E1003Config, E1007Config, E1008Config, E1010Config, E1013Config,
+    E1014Config, E1015Config, E1016Config,
 };
 pub use checkers::e11_code_surface_complexity::{
     E1101Config, E1102Config, E1103Config, E1104Config, E1105Config, E1106Config, E1107Config,
@@ -74,7 +76,9 @@ pub use checkers::e14_type_safety::{
     E1401Config, E1402Config, E1403Config, E1404Config, E1405Config, E1406Config, E1407Config,
     E1408Config, E1409Config,
 };
-pub use checkers::e15_concurrency::{E1503Config, E1506Config, E1508Config, E1509Config, E1510Config};
+pub use checkers::e15_concurrency::{
+    E1503Config, E1506Config, E1508Config, E1509Config, E1510Config,
+};
 pub use checkers::e16_memory_safety::{
     E1603Config, E1604Config, E1605Config, E1606Config, E1607Config, E1609Config, E1610Config,
 };
@@ -86,9 +90,7 @@ pub use checkers::e18_api_design::{
     E1801Config, E1802Config, E1803Config, E1804Config, E1805Config, E1806Config, E1807Config,
     E1808Config, E1809Config, E1810Config,
 };
-pub use checkers::e19_hygiene::{
-    E1901Config, E1902Config, E1903Config, E1904Config,
-};
+pub use checkers::e19_hygiene::{E1904Config, E1905Config, E1906Config, E1908Config};
 
 /// Errors that can occur during code analysis
 #[derive(Error, Debug)]

@@ -65,7 +65,7 @@ pub fn e1013_bad_union_transmute() {
 
     // PROBLEM E1003: Direct use of unsafe code
     unsafe {
-        // PROBLEM E1904: No safety documentation
+        // PROBLEM E1908: No safety documentation
         // PROBLEM E1013: Reading float interpretation of int bits
         let as_float = val.float;
         let _ = as_float; // Should be 1.0

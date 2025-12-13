@@ -20,7 +20,7 @@ pub fn e1003_bad_unsafe_code() {
 
     // PROBLEM E1003: Direct use of usafe code
     unsafe {
-        // PROBLEM E1904: No safety comment explaining why this is safe
+        // PROBLEM E1908: No safety comment explaining why this is safe
         let _value = *ptr;
     }
 }

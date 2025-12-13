@@ -49,7 +49,11 @@ These are straightforward pattern matches or simple metrics. Implement first.
  [x] | E1409 | Partial initialization | MED | 2 | 2 | E14 Type Safety |
  [x] | E1508 | Sleep instead of synchronization | LOW | 2 | 2 | E15 Concurrency |
  [x] | E1510 | Mutex instead of RwLock | LOW | 2 | 2 | E15 Concurrency |
+ [x] | E1511 | Unbounded task/thread spawning in loop | HIGH | 2 | 2 | E15 Concurrency |
+ [x] | E1512 | Prohibit std::thread::spawn | HIGH | 2 | 2 | E15 Concurrency |
+ [x] | E1513 | Blocking syscalls in async | MED | 2 | 2 | E15 Concurrency |
  [x] | E1606 | Unnecessary clone | LOW | 2 | 2 | E16 Memory Safety |
+ [x] | E1612 | Prohibit custom allocators | MED | 2 | 2 | E16 Memory Safety |
  [x] | E1701 | Oversized struct passed by value | LOW | 2 | 2 | E17 Performance |
  [x] | E1702 | Unnecessary allocations | LOW | 2 | 2 | E17 Performance |
  [x] | E1703 | String concatenation in loop | LOW | 2 | 2 | E17 Performance |
@@ -71,10 +75,13 @@ These are straightforward pattern matches or simple metrics. Implement first.
  [x] | E1111 | Excessive tuple complexity | LOW | 2 | 2 | E11 Surface Complexity |
  [x] | E1112 | Hardcoded magic numbers | LOW | 2 | 2 | E11 Surface Complexity |
  [x] | E1410 | Float equality comparison with == | MED | 2 | 2 | E14 Type Safety |
- [x] | E1511 | Unbounded task/thread spawning in loop | HIGH | 2 | 2 | E15 Concurrency |
  [x] | E1611 | Method consumes self unnecessarily | MED | 2 | 2 | E16 Memory Safety |
  [x] | E1712 | Expensive operations inside loops | MED | 2 | 2 | E17 Performance |
  [x] | E1812 | Public enum without #[non_exhaustive] | LOW | 2 | 2 | E18 API Design |
+ [x] | E1901 | Critical lint override detection | HIGH | 2 | 2 | E19 Compliance |
+ [x] | E1902 | Medium lint override detection | MED | 2 | 2 | E19 Compliance |
+ [x] | E1903 | Minor lint override detection | LOW | 2 | 2 | E19 Compliance |
+ [x] | E1907 | Test modules missing coverage attribute | HIGH | 2 | 2 | E19 Compliance |
 
 
 ### Phase 2: Moderate Complexity (40 checkers)
@@ -122,7 +129,7 @@ These require more sophisticated AST analysis or control flow understanding.
  [x] | E1201 | Overly complex generics | MED | 4 | 3 | E12 Pattern Complexity |
  [x] | E1203 | Complicated borrowing patterns | MED | 4 | 4 | E12 Pattern Complexity |
  [x] | E1210 | Recursive type definitions | HIGH | 4 | 4 | E12 Pattern Complexity |
- [x] | E1904 | Unsafe without comments | HIGH | 4 | 3 | E10 Unsafe Code |
+ [x] | E1908 | Unsafe without comments | HIGH | 4 | 3 | E10 Unsafe Code |
 
 ### Phase 3: Complex & Unclear (26 checkers)
 
